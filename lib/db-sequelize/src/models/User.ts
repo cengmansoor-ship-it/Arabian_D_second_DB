@@ -6,6 +6,7 @@ import {
   type InferCreationAttributes,
   type BelongsToManyAddAssociationMixin,
   type BelongsToManyGetAssociationsMixin,
+  type BelongsToManySetAssociationsMixin,
 } from "sequelize";
 import { sequelize } from "../connection";
 import type { Role } from "./Role";
@@ -21,6 +22,7 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
 
   declare addRole: BelongsToManyAddAssociationMixin<Role, number>;
   declare getRoles: BelongsToManyGetAssociationsMixin<Role>;
+  declare setRoles: BelongsToManySetAssociationsMixin<Role, number>;
 }
 
 User.init(

@@ -1,5 +1,5 @@
 import { sequelize } from "./connection";
-import { User, Role, Permission, CompanySetting, Currency, DocumentSequence } from "./models";
+import { User, Role, Permission, CompanySetting, Currency, DocumentSequence, UnitType, Account, CashAccount } from "./models";
 import { hashPassword } from "./auth";
 
 const CORE_PERMISSIONS = [
@@ -7,11 +7,27 @@ const CORE_PERMISSIONS = [
   "roles.manage",
   "settings.manage",
   "accounting.manage",
+  "projects.manage",
   "sales.manage",
   "rentals.manage",
   "purchases.manage",
   "hr.manage",
   "reports.view",
+  "parties.manage",
+];
+
+const CORE_UNIT_TYPES = [
+  "Apartment",
+  "Shop",
+  "Parking",
+  "Restaurant",
+  "Clinic",
+  "Supermarket",
+  "Mosque",
+  "Office",
+  "Storage",
+  "Other",
+  "Other Commercial",
 ];
 
 const CORE_DOCUMENT_SEQUENCES = [
@@ -56,6 +72,31 @@ export async function ensureDatabaseReady(): Promise<void> {
 
   for (const seq of CORE_DOCUMENT_SEQUENCES) {
     await DocumentSequence.findOrCreate({ where: { documentType: seq.documentType }, defaults: { ...seq, nextNumber: 1 } });
+  }
+
+  for (const name of CORE_UNIT_TYPES) {
+    await UnitType.findOrCreate({ where: { name }, defaults: { name, isActive: true } });
+  }
+
+  const coreAccounts: { code: string; name: string; type: "asset" | "liability" | "equity" | "income" | "expense" }[] = [
+    { code: "1000", name: "Cash on Hand", type: "asset" },
+    { code: "1100", name: "Accounts Receivable", type: "asset" },
+    { code: "2000", name: "Accounts Payable", type: "liability" },
+    { code: "3000", name: "Owner's Equity", type: "equity" },
+    { code: "4000", name: "Sales Revenue", type: "income" },
+    { code: "4100", name: "Rental Revenue", type: "income" },
+    { code: "5000", name: "General Expenses", type: "expense" },
+  ];
+  for (const acc of coreAccounts) {
+    await Account.findOrCreate({ where: { code: acc.code }, defaults: { ...acc, isSystem: true, isActive: true } });
+  }
+
+  const cashAccount = await Account.findOne({ where: { code: "1000" } });
+  if (cashAccount) {
+    await CashAccount.findOrCreate({
+      where: { name: "Main Cash Box (AFN)" },
+      defaults: { name: "Main Cash Box (AFN)", currencyCode: "AFN", accountId: cashAccount.id, isActive: true },
+    });
   }
 
   const anyUserExists = (await User.count()) > 0;

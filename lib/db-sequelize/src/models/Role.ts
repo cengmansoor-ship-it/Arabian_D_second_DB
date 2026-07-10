@@ -7,6 +7,8 @@ import {
   type BelongsToManyAddAssociationMixin,
   type BelongsToManyHasAssociationMixin,
   type BelongsToManyGetAssociationsMixin,
+  type BelongsToManyRemoveAssociationMixin,
+  type BelongsToManySetAssociationsMixin,
 } from "sequelize";
 import { sequelize } from "../connection";
 import type { Permission } from "./Permission";
@@ -21,6 +23,9 @@ export class Role extends Model<InferAttributes<Role>, InferCreationAttributes<R
 
   declare addPermission: BelongsToManyAddAssociationMixin<Permission, number>;
   declare hasPermission: BelongsToManyHasAssociationMixin<Permission, number>;
+  declare removePermission: BelongsToManyRemoveAssociationMixin<Permission, number>;
+  declare setPermissions: BelongsToManySetAssociationsMixin<Permission, number>;
+  declare getPermissions: BelongsToManyGetAssociationsMixin<Permission>;
   declare getUsers: BelongsToManyGetAssociationsMixin<User>;
 }
 
