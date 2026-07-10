@@ -4,10 +4,12 @@ A complete, production-quality, local-first Real Estate, Construction Accounting
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the existing API server stub (port from $PORT)
+- The `API Server` workflow runs `PORT=8080 pnpm --filter @workspace/api-server run dev` (SQLite DB auto-created at `data/arabian-d.sqlite`, seeded with a default admin user on boot — see `lib/db-sequelize/src/seed.ts`)
+- Default login: `admin` / `admin123` (override via `ADMIN_USERNAME`/`ADMIN_PASSWORD` env vars) — **change before real use**
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
+- See `PROJECT_STATUS.md` for what's implemented vs. still pending against the spec
 
 ## Stack
 
@@ -28,7 +30,9 @@ A complete, production-quality, local-first Real Estate, Construction Accounting
 - `ASSUMPTIONS.md` — all implementation decisions and open questions
 - `attached_assets/Arabian_D_Package/` — all uploaded reference documents
 - `lib/api-spec/openapi.yaml` — API contract (source of truth)
+- `lib/db-sequelize/` — the real database layer (Sequelize models, connection, auth, seed)
 - `lib/db/` — Drizzle/Postgres stub (NOT used by main app; main app uses Sequelize/SQLite)
+- `PROJECT_STATUS.md` — phase-by-phase implementation progress against the spec
 
 ## Architecture decisions
 

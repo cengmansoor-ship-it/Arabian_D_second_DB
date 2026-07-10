@@ -1,0 +1,25 @@
+{
+  "name": "@workspace/db-sequelize",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "sequelize": "^6.37.7",
+    "sqlite3": "^5.1.7",
+    "mysql2": "^3.15.2",
+    "decimal.js": "^10.6.0",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/bcryptjs": "^2.4.6"
+  }
+}

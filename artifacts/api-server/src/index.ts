@@ -1,5 +1,8 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { ensureDatabaseReady, requireJwtSecret } from "@workspace/db-sequelize";
+
+requireJwtSecret();
 
 const rawPort = process.env["PORT"];
 
@@ -14,6 +17,9 @@ const port = Number(rawPort);
 if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
+
+await ensureDatabaseReady();
+logger.info("Database ready");
 
 app.listen(port, (err) => {
   if (err) {
