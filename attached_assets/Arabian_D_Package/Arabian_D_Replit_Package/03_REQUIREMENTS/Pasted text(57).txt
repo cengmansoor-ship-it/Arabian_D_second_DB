@@ -1,0 +1,445 @@
+Build a modern, fast, accurate, offline-first Real Estate Sales & Rental Management System for “Arabian D Residence”.
+
+Tech Stack:
+Backend: Node.js + Express.js
+Frontend: React + TypeScript
+Database: MySQL
+UI: Modern animated dashboard
+Font: Use only the custom Beheij Zar font that I will provide
+Template: I will provide a downloaded React template; fully customize it based on this project
+
+Important:
+The system will currently work offline/local, but the architecture must be hosting-ready. If the client later asks for hosting, the same codebase should be deployable without rebuilding the system.
+
+Project Concept:
+This is a real estate project system for managing:
+• Blocks
+• Floors
+• Apartments/Houses
+• Shops
+• Parking
+• Restaurant
+• Clinic
+• Supermarket
+• Sales
+• Installments/receipts
+• Rentals
+• Reports
+
+The project structure must be dynamic because the final map/plan may change. Admin must be able to create any project layout after the architectural map is finalized.
+
+Core Project Setup:
+Create a Project Management module where admin can define:
+
+1. Project Name
+Example: Arabian D Residence
+
+1. Blocks
+Admin can create blocks dynamically:
+Example:
+A1, A2, A3, A4, A5
+B1, B2, B3, B4, B5
+
+1. Floors per block
+Example:
+15 total floors
+Ground floor = shops/commercial
+Remaining floors = apartments
+But it must be dynamic.
+
+1. Units per floor
+Admin can define how many apartments/houses exist on each floor.
+Example:
+13 apartments per floor
+or 4 apartments per floor
+or 5 apartments per floor
+
+1. Unit Types
+Each unit must have type:
+• Apartment / House
+• Shop
+• Parking
+• Restaurant
+• Clinic
+• Supermarket
+• Other Commercial Unit
+
+1. Unit Status
+Each unit must have status:
+• Available
+• Sold
+• Reserved
+• Rented
+• Blocked
+• Cancelled
+
+1. Unit Purpose
+Each unit can be:
+• For Sale
+• For Rent
+• Both Sale and Rent
+• Not Available
+
+Sales Module:
+Create a complete sales account system for apartments and shops.
+
+Customer fields:
+• Customer name
+• Father name
+• Grandfather name
+• Tazkira number
+• Phone number
+• Address
+• Documents upload option
+• Notes
+
+Sale fields:
+• Project
+• Block
+• Floor
+• Unit number
+• Unit type
+• Room count
+• Original price
+• Discount
+• Final price
+• Sale date
+• Payment type: Full payment / Installment
+• Contract number
+• Documents
+• Status
+
+Installment / Receipt System:
+For every sale, create a customer ledger.
+Receipts must include:
+• Receipt date
+• Received amount
+• Remaining balance
+• Payment method
+• Note
+• Created by user
+
+After each receipt:
+Remaining balance must auto-calculate.
+If balance becomes zero, status must become Fully Paid.
+Prevent overpayment unless admin confirms.
+
+Rental Module:
+Create complete rental system for shops and commercial units.
+
+Tenant fields:
+• Tenant name
+• Father name
+• Grandfather name
+• Tazkira number
+• Phone number
+• Address
+• Documents
+• Notes
+
+Rental contract fields:
+• Project
+• Block
+• Floor
+• Shop/unit number
+• Monthly rent price
+• Daily rent calculation
+• Contract start date
+• Contract end date
+• Number of days
+• Number of months
+• Security deposit
+• Contract status: Active / Ended / Cancelled
+• Documents
+
+Rental payment system:
+Rent payments must clearly show:
+• Which month the payment belongs to
+• Payment date
+• Amount paid
+• Total rent due
+• Remaining rent balance
+• Advance payment if any
+• Late/unpaid months
+
+Important rental logic:
+If tenant ends contract, admin enters contract end date.
+System must automatically calculate:
+• Total used days
+• Total used months
+• Payable rent
+• Paid amount
+• Remaining balance
+
+Commercial Units:
+Shops must support both:
+• Sale
+• Rent
+
+Admin must choose whether a shop is sold or rented.
+If sold, it goes to sales ledger.
+If rented, it goes to rental ledger.
+If sold, it must not be available for rent unless admin changes status with permission.
+
+Reports Module:
+Reports are extremely important because this system handles large financial transactions.
+
+Create accurate reports for:
+
+1. Project Summary Report:
+• Total blocks
+• Total floors
+• Total apartments
+• Total shops
+• Total parking units
+• Total commercial units
+• Sold units
+• Available units
+• Rented units
+• Reserved units
+
+1. Sales Report:
+• Total sales amount
+• Total received amount
+• Total remaining balance
+• Sales by date range
+• Sales by block
+• Sales by floor
+• Sales by unit type
+• Customer-wise ledger
+• Fully paid customers
+• Customers with remaining balance
+
+1. Rental Report:
+• Total active tenants
+• Monthly rent expected
+• Monthly rent received
+• Remaining rent
+• Expired contracts
+• Contracts ending soon
+• Tenant-wise ledger
+
+1. Unit Availability Report:
+• Block-wise unit map
+• Floor-wise unit map
+• Sold/available/rented color status
+• Printable report
+
+1. Financial Dashboard:
+• Total project value
+• Total received money
+• Total remaining money
+• Total rent income
+• Daily income
+• Monthly income
+• Yearly income
+
+All reports must support:
+• Date filter
+• Project filter
+• Block filter
+• Unit type filter
+• Customer filter
+• Export PDF
+• Export Excel
+• Print
+
+Dashboard:
+Create animated modern dashboard with cards and charts:
+• Total units
+• Sold units
+• Available units
+• Rented units
+• Total sales
+• Total received
+• Total remaining
+• Monthly rent income
+• Recent payments
+• Recent sales
+• Contracts ending soon
+
+Design Requirements:
+• Very modern UI
+• Smooth animations
+• Clean sidebar
+• RTL support for Pashto/Dari
+• Use Beheij Zar font everywhere
+• Responsive for desktop and mobile
+• Fast loading
+• Professional colors
+• Dashboard charts
+• Status badges
+• Modern tables
+• Search and filters
+
+Accuracy Rules:
+• Use MySQL transactions for sale/payment/rent operations
+• Never allow duplicate unit sale
+• Never allow sold unit to be sold again
+• Never allow rented unit conflict in the same active contract period
+• All money fields must use DECIMAL, not FLOAT
+• Every financial transaction must create audit log
+• Reports must calculate from actual payment tables, not manually entered totals
+
+Database Requirements:
+Create normalized MySQL schema:
+
+Tables:
+users
+roles
+projects
+blocks
+floors
+units
+unit_types
+customers
+sales
+sale_payments
+tenants
+rental_contracts
+rental_payments
+documents
+audit_logs
+settings
+
+Required relationships:
+project -> blocks
+block -> floors
+floor -> units
+unit -> sale OR rental_contract
+customer -> sales
+sale -> sale_payments
+tenant -> rental_contracts
+rental_contract -> rental_payments
+
+User Roles:
+• Super Admin
+• Admin
+• Accountant
+• Sales Manager
+• Viewer
+
+Permissions:
+Super Admin can do everything.
+Admin can manage project, sales, rentals, reports.
+Accountant can add receipts and view reports.
+Sales Manager can manage customers and sales.
+Viewer can only view reports.
+
+Security:
+• Login system
+• JWT authentication
+• Password hashing
+• Role-based permissions
+• Audit logs for create/update/delete/payment
+• Soft delete instead of permanent delete
+• Backup option for database
+
+Offline / Hosting Ready:
+For now system runs locally:
+Frontend + Backend + MySQL local
+
+But structure must support future hosting:
+• Use environment variables
+• API base URL configurable
+• Database config in .env
+• No hardcoded localhost in frontend
+• Clean folder structure
+• Production build ready
+
+Folder Structure:
+backend/
+src/
+config/
+controllers/
+routes/
+models/
+middleware/
+services/
+utils/
+database/
+frontend/
+src/
+components/
+pages/
+layouts/
+services/
+hooks/
+types/
+utils/
+assets/
+styles/
+
+Important Business Logic:
+When sale is created:
+• Unit status becomes Sold
+• Sale ledger created
+• Project sold count increases automatically via report query
+
+When payment is received:
+• Insert sale payment
+• Update sale remaining balance
+• If fully paid, mark sale Fully Paid
+• Create receipt printable page
+• Add audit log
+
+When rental contract is created:
+• Unit status becomes Rented
+• Contract ledger created
+
+When rent payment is received:
+• Payment must be assigned to exact month or date period
+• Remaining rent must auto-calculate
+• Add audit log
+
+When contract ends:
+• Calculate used days/months
+• Calculate final payable rent
+• Mark contract ended
+• Unit becomes Available unless sold or blocked
+
+Need printable pages:
+• Sale contract
+• Payment receipt
+• Customer ledger
+• Rental contract
+• Rent receipt
+• Project summary
+• Sales report
+• Rental report
+
+Use the uploaded project documents as requirement references:
+• Project has dynamic blocks, floors, and units.
+• Existing example includes A and B block groups, total 10 blocks, 60 floors, and 270 apartments.
+• A blocks have 5 blocks, 6 floors each, 4 apartments per floor.
+• B blocks have 5 blocks, 6 floors each, 5 apartments per floor.
+• Sales ledger must include customer identity, block, floor, unit number, room count, original price, receipt, and remaining balance.
+• Shops must support both sale and rental systems.
+• Rental must calculate days, months, paid amount, and remaining balance.
+
+Build the complete project step by step:
+1. Create database schema and migrations
+2. Create backend API
+3. Create authentication and roles
+4. Create project/block/floor/unit management
+5. Create sales module
+6. Create payment/receipt module
+7. Create rental module
+8. Create reports module
+9. Create dashboard
+10. Customize UI template with Beheij Zar font
+11. Add animations
+12. Add export PDF/Excel/Print
+13. Test all financial calculations carefully
+
+The final system must be production-quality, accurate, fast, clean, and easy to host later.
+
+
+Do not create this system with a fixed project name. Build it as a dynamic real estate management system where the admin can create any project name, blocks, floors, apartments, shops, parking, restaurant, clinic, and supermarket from the dashboard.
+
+
+
+
+
+
+The uploaded template must be fully customized. Do not keep the original template demo pages, fake data, unused components, or default branding. Replace everything with real estate project modules.

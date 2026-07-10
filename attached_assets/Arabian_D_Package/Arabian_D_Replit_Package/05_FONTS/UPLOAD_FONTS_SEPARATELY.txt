@@ -1,0 +1,8 @@
+د فونټونو لپاره:
+
+لاندې دوه فونټونه چې تاسې مخکې Upload کړي دي، Replit ته په جلا ډول Upload کړئ:
+
+BAHIJ ZAR-REGULAR.TTF
+BAHIJ ZAR-BOLD.TTF
+
+په پروژه کې یې د local @font-face له لارې استعمال کړئ.
