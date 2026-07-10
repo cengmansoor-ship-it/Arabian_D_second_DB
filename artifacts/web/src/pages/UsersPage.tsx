@@ -28,31 +28,44 @@ export default function UsersPage() {
 
   return (
     <div>
-      <p className="page-title">کاروونکي</p>
-      <p className="page-sub">د سیسټم کاروونکو اداره</p>
+      <div className="page-header">
+        <h1 className="page-title">کاروونکي</h1>
+        <div className="page-breadcrumb">
+          <span>کورپاڼه</span>
+          <span>/</span>
+          <span>کاروونکي</span>
+        </div>
+      </div>
 
       {/* Create form */}
-      <div className="card" style={{ padding: 24, marginBottom: 24 }}>
-        <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 18, borderBottom: "1px solid var(--border)", paddingBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
-          <UserPlus size={17} />نوی کاروونکی
+      <div className="card" style={{ marginBottom: 28 }}>
+        <div className="card-header">
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <UserPlus size={18} /> نوی کاروونکی
+          </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px,1fr))", gap: 12, marginBottom: 14 }}>
-          <div><label className="form-label">کارن نوم</label><input className="form-input" placeholder="admin" value={form.username} onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))} /></div>
-          <div><label className="form-label">بشپړ نوم</label><input className="form-input" placeholder="احمد خان" value={form.fullName} onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))} /></div>
-          <div><label className="form-label">پټنوم</label><input className="form-input" type="password" placeholder="لږ تر لږه ۶ توري" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} /></div>
+        <div className="card-body">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px,1fr))", gap: 20, marginBottom: 20 }}>
+            <div><label className="form-label">کارن نوم</label><input className="form-input" placeholder="admin" value={form.username} onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))} /></div>
+            <div><label className="form-label">بشپړ نوم</label><input className="form-input" placeholder="احمد خان" value={form.fullName} onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))} /></div>
+            <div><label className="form-label">پټنوم</label><input className="form-input" type="password" placeholder="لږ تر لږه ۶ توري" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} /></div>
+          </div>
+          <div style={{ marginBottom: 20 }}>
+            <label className="form-label">رولونه</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+              {roles?.map((r) => (
+                <label key={r.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 6, border: `1px solid ${form.roleNames.includes(r.name) ? "var(--primary)" : "var(--border)"}`, background: form.roleNames.includes(r.name) ? "var(--primary-light)" : "transparent", cursor: "pointer", fontSize: 14 }}>
+                  <input type="checkbox" checked={form.roleNames.includes(r.name)} onChange={() => toggleRole(r.name)} style={{ accentColor: "var(--primary)", width: 16, height: 16 }} />
+                  {r.name}
+                </label>
+              ))}
+            </div>
+          </div>
+          {error && <div style={{ color: "var(--danger)", fontSize: 14, marginBottom: 16 }}>{error}</div>}
+          <button className="btn btn-primary" onClick={() => createMutation.mutate()} disabled={!form.username || !form.fullName || form.password.length < 6 || createMutation.isPending}>
+            {createMutation.isPending ? "..." : "جوړول"}
+          </button>
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
-          {roles?.map((r) => (
-            <label key={r.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 4, border: `1px solid ${form.roleNames.includes(r.name) ? "var(--primary)" : "var(--border)"}`, background: form.roleNames.includes(r.name) ? "var(--primary-light)" : "transparent", cursor: "pointer", fontSize: 13 }}>
-              <input type="checkbox" checked={form.roleNames.includes(r.name)} onChange={() => toggleRole(r.name)} style={{ accentColor: "var(--primary)" }} />
-              {r.name}
-            </label>
-          ))}
-        </div>
-        {error && <div style={{ color: "var(--danger)", fontSize: 13, marginBottom: 10 }}>{error}</div>}
-        <button className="btn btn-primary" onClick={() => createMutation.mutate()} disabled={!form.username || !form.fullName || form.password.length < 6 || createMutation.isPending}>
-          {createMutation.isPending ? "..." : "جوړول"}
-        </button>
       </div>
 
       {/* Table */}
@@ -82,7 +95,7 @@ export default function UsersPage() {
               </tr>
             ))}
             {users?.length === 0 && (
-              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--muted)", padding: "24px" }}>هیڅ کاروونکی ونه موندل شو.</td></tr>
+              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--muted)", padding: "32px" }}>هیڅ کاروونکی ونه موندل شو.</td></tr>
             )}
           </tbody>
         </table>

@@ -3,7 +3,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import {
   LayoutDashboard, Settings, Users, ShieldCheck, ScrollText,
   LogOut, Building2, Layers, Tags, BookText, Wallet, Contact,
-  Menu, X, ChevronLeft,
+  Menu, ChevronRight, Search, Bell, MessageSquare, ChevronDown
 } from "lucide-react";
 import { useAuth } from "../lib/auth";
 
@@ -55,6 +55,8 @@ export default function AppShell() {
           display: "flex",
           flexDirection: "column",
           flexShrink: 0,
+          boxShadow: sidebarOpen ? "1px 0 10px rgba(0,0,0,0.1)" : "none",
+          zIndex: 40,
         }}
       >
         {/* Logo */}
@@ -62,16 +64,15 @@ export default function AppShell() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 10,
-            padding: "16px 20px",
-            borderBottom: "1px solid var(--sidebar-border)",
+            gap: 12,
+            padding: "24px 24px",
             minWidth: "var(--sidebar-width)",
           }}
         >
           <div
             style={{
-              width: 36,
-              height: 36,
+              width: 40,
+              height: 40,
               borderRadius: 8,
               background: "var(--primary)",
               display: "flex",
@@ -80,35 +81,31 @@ export default function AppShell() {
               flexShrink: 0,
             }}
           >
-            <Building2 size={20} color="#fff" />
+            <Building2 size={24} color="#fff" />
           </div>
           <div style={{ overflow: "hidden" }}>
-            <div style={{ color: "#fff", fontWeight: 700, fontSize: 14, lineHeight: 1.3, whiteSpace: "nowrap" }}>
+            <div style={{ color: "#fff", fontWeight: 700, fontSize: 22, lineHeight: 1.2, whiteSpace: "nowrap" }}>
               اربین ډي
-            </div>
-            <div style={{ color: "var(--sidebar-muted)", fontSize: 11, whiteSpace: "nowrap" }}>
-              د مدیریت سیسټم
             </div>
           </div>
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, overflowY: "auto", padding: "12px 12px", minWidth: "var(--sidebar-width)" }}>
+        <nav style={{ flex: 1, overflowY: "auto", padding: "12px 16px", minWidth: "var(--sidebar-width)" }}>
           {navGroups.map((group) => {
             if (group.adminOnly && !isAdmin) return null;
             const visibleItems = group.items.filter((item) => !item.adminOnly || isAdmin);
             if (visibleItems.length === 0) return null;
             return (
-              <div key={group.label} style={{ marginBottom: 20 }}>
+              <div key={group.label} style={{ marginBottom: 24 }}>
                 <div
                   style={{
                     color: "var(--sidebar-muted)",
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: 600,
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    padding: "0 10px",
-                    marginBottom: 6,
+                    letterSpacing: "0.05em",
+                    padding: "0 12px",
+                    marginBottom: 12,
                   }}
                 >
                   {group.label}
@@ -121,32 +118,33 @@ export default function AppShell() {
                     style={({ isActive }) => ({
                       display: "flex",
                       alignItems: "center",
-                      gap: 10,
-                      padding: "9px 12px",
-                      borderRadius: 6,
-                      marginBottom: 2,
+                      gap: 12,
+                      padding: "10px 16px",
+                      borderRadius: 4,
+                      marginBottom: 4,
                       textDecoration: "none",
-                      fontSize: 14,
-                      fontWeight: isActive ? 600 : 400,
+                      fontSize: 15,
+                      fontWeight: 500,
                       color: isActive ? "#fff" : "var(--sidebar-text)",
                       background: isActive ? "var(--sidebar-active-bg)" : "transparent",
-                      borderRight: isActive ? "3px solid var(--primary)" : "3px solid transparent",
-                      transition: "background 0.15s",
+                      transition: "background 0.15s, color 0.15s",
                     })}
                     onMouseEnter={(e) => {
                       const el = e.currentTarget;
-                      if (!el.style.borderRight.includes("var(--primary)")) {
+                      if (el.style.background === "transparent" || el.style.background === "") {
                         el.style.background = "var(--sidebar-hover-bg)";
                       }
                     }}
                     onMouseLeave={(e) => {
                       const el = e.currentTarget;
-                      if (!el.style.borderRight.includes("var(--primary)")) {
+                      if (!el.classList.contains("active")) {
+                        // React router dom adds 'active' class by default
                         el.style.background = "transparent";
                       }
                     }}
+                    className={({ isActive }) => (isActive ? "active" : "")}
                   >
-                    <item.icon size={17} style={{ flexShrink: 0 }} />
+                    <item.icon size={20} style={{ flexShrink: 0 }} />
                     <span style={{ whiteSpace: "nowrap" }}>{item.label}</span>
                   </NavLink>
                 ))}
@@ -155,58 +153,40 @@ export default function AppShell() {
           })}
         </nav>
 
-        {/* User / Logout */}
+        {/* Logout */}
         <div
           style={{
-            borderTop: "1px solid var(--sidebar-border)",
-            padding: "12px 16px",
+            padding: "16px",
             minWidth: "var(--sidebar-width)",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                background: "var(--primary)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#fff",
-                fontSize: 13,
-                fontWeight: 700,
-                flexShrink: 0,
-              }}
-            >
-              {user?.fullName?.[0] ?? "A"}
-            </div>
-            <div style={{ overflow: "hidden" }}>
-              <div style={{ color: "#fff", fontSize: 13, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {user?.fullName}
-              </div>
-              <div style={{ color: "var(--sidebar-muted)", fontSize: 11 }}>
-                {user?.roles.join("، ")}
-              </div>
-            </div>
-          </div>
           <button
             onClick={() => logout()}
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 8,
+              gap: 12,
               width: "100%",
-              padding: "7px 10px",
-              borderRadius: 5,
+              padding: "10px 16px",
+              borderRadius: 4,
               border: "none",
               background: "transparent",
-              color: "#FB5454",
-              fontSize: 13,
+              color: "var(--sidebar-text)",
+              fontSize: 15,
+              fontWeight: 500,
               cursor: "pointer",
+              transition: "background 0.15s, color 0.15s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--sidebar-hover-bg)";
+              e.currentTarget.style.color = "#fff";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--sidebar-text)";
             }}
           >
-            <LogOut size={15} />
+            <LogOut size={20} />
             وتل
           </button>
         </div>
@@ -222,49 +202,123 @@ export default function AppShell() {
             borderBottom: "1px solid var(--border)",
             display: "flex",
             alignItems: "center",
-            padding: "0 20px",
-            gap: 12,
+            padding: "0 32px",
+            gap: 24,
             flexShrink: 0,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+            zIndex: 30,
           }}
         >
-          <button
-            onClick={() => setSidebarOpen((v) => !v)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 36,
-              height: 36,
-              borderRadius: 6,
-              border: "1px solid var(--border)",
-              background: "transparent",
-              cursor: "pointer",
-              color: "var(--muted)",
-            }}
-          >
-            {sidebarOpen ? <ChevronLeft size={18} /> : <Menu size={18} />}
-          </button>
-          <div style={{ flex: 1 }} />
-          <div
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: "50%",
-              background: "var(--primary)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#fff",
-              fontSize: 13,
-              fontWeight: 700,
-            }}
-          >
-            {user?.fullName?.[0] ?? "A"}
+          <div style={{ display: "flex", alignItems: "center", gap: 20, flex: 1 }}>
+            <button
+              onClick={() => setSidebarOpen((v) => !v)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                border: "1px solid var(--border)",
+                background: "var(--surface)",
+                cursor: "pointer",
+                color: "var(--text)",
+                boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+              }}
+            >
+              {sidebarOpen ? <ChevronRight size={20} /> : <Menu size={20} />}
+            </button>
+
+            <div style={{ position: "relative", width: "100%", maxWidth: 400 }}>
+              <div style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", color: "var(--muted-light)" }}>
+                <Search size={18} />
+              </div>
+              <input
+                type="text"
+                placeholder="د لټون لپاره دلته ولیکئ..."
+                style={{
+                  width: "100%",
+                  height: 44,
+                  borderRadius: 9999,
+                  background: "var(--surface-2)",
+                  border: "none",
+                  padding: "0 44px 0 20px",
+                  fontSize: 14,
+                  color: "var(--text)",
+                  outline: "none",
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <button
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                background: "var(--surface-2)",
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--muted)",
+                cursor: "pointer",
+                position: "relative",
+              }}
+            >
+              <Bell size={20} />
+              <div style={{ position: "absolute", top: 10, right: 10, width: 8, height: 8, borderRadius: "50%", background: "var(--danger)", border: "2px solid var(--surface-2)" }} />
+            </button>
+            <button
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                background: "var(--surface-2)",
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--muted)",
+                cursor: "pointer",
+                position: "relative",
+              }}
+            >
+              <MessageSquare size={20} />
+            </button>
+            
+            <div style={{ width: 1, height: 32, background: "var(--border)", margin: "0 8px" }} />
+
+            <div style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
+              <div style={{ textAlign: "left", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{user?.fullName}</span>
+                <span style={{ fontSize: 12, color: "var(--muted)" }}>{user?.roles.join("، ")}</span>
+              </div>
+              <div
+                style={{
+                  width: 46,
+                  height: 46,
+                  borderRadius: "50%",
+                  background: "var(--primary-light)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "var(--primary)",
+                  fontSize: 18,
+                  fontWeight: 700,
+                  flexShrink: 0,
+                }}
+              >
+                {user?.fullName?.[0] ?? "A"}
+              </div>
+              <ChevronDown size={16} color="var(--muted)" />
+            </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main style={{ flex: 1, overflowY: "auto", padding: "24px 28px" }}>
+        <main style={{ flex: 1, overflowY: "auto", padding: "32px" }}>
           <Outlet />
         </main>
       </div>

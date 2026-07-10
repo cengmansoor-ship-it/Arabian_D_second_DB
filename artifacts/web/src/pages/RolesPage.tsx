@@ -27,52 +27,64 @@ export default function RolesPage() {
 
   return (
     <div>
-      <p className="page-title">رولونه او واکونه</p>
-      <p className="page-sub">د کاروونکو واکونه اداره کړئ</p>
+      <div className="page-header">
+        <h1 className="page-title">رولونه او واکونه</h1>
+        <div className="page-breadcrumb">
+          <span>کورپاڼه</span>
+          <span>/</span>
+          <span>رولونه</span>
+        </div>
+      </div>
 
       {/* Create role */}
-      <div className="card" style={{ padding: 24, marginBottom: 24 }}>
-        <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 16, borderBottom: "1px solid var(--border)", paddingBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
-          <ShieldPlus size={17} />نوی رول
+      <div className="card" style={{ marginBottom: 28 }}>
+        <div className="card-header">
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <ShieldPlus size={18} /> نوی رول
+          </div>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
-          <div style={{ flex: "0 0 160px" }}>
-            <label className="form-label">نوم</label>
-            <input className="form-input" placeholder="manager" value={newRole.name} onChange={(e) => setNewRole((r) => ({ ...r, name: e.target.value }))} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <label className="form-label">تشریح</label>
-            <input className="form-input" placeholder="د رول تشریح" value={newRole.description} onChange={(e) => setNewRole((r) => ({ ...r, description: e.target.value }))} />
-          </div>
-          <div style={{ display: "flex", alignItems: "flex-end" }}>
-            <button className="btn btn-primary" onClick={() => createRoleMutation.mutate()} disabled={!newRole.name || createRoleMutation.isPending}>
-              جوړول
-            </button>
+        <div className="card-body">
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
+            <div style={{ flex: "1 1 200px" }}>
+              <label className="form-label">نوم</label>
+              <input className="form-input" placeholder="manager" value={newRole.name} onChange={(e) => setNewRole((r) => ({ ...r, name: e.target.value }))} />
+            </div>
+            <div style={{ flex: "2 1 300px" }}>
+              <label className="form-label">تشریح</label>
+              <input className="form-input" placeholder="د رول تشریح" value={newRole.description} onChange={(e) => setNewRole((r) => ({ ...r, description: e.target.value }))} />
+            </div>
+            <div style={{ display: "flex", alignItems: "flex-end" }}>
+              <button className="btn btn-primary" onClick={() => createRoleMutation.mutate()} disabled={!newRole.name || createRoleMutation.isPending}>
+                جوړول
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Roles list */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
         {roles?.map((role) => (
-          <div key={role.id} className="card" style={{ padding: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <div key={role.id} className="card">
+            <div className="card-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
-                <div style={{ fontWeight: 600, fontSize: 15 }}>{role.name}</div>
-                {role.description && <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>{role.description}</div>}
+                <div style={{ fontWeight: 600, fontSize: 16 }}>{role.name}</div>
+                {role.description && <div style={{ fontSize: 14, color: "var(--muted)", marginTop: 4, fontWeight: 500 }}>{role.description}</div>}
               </div>
-              <span className="badge badge-muted">{role.permissions.length} واک</span>
+              <span className="badge badge-muted" style={{ fontSize: 13 }}>{role.permissions.length} واکونه</span>
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {permissions?.map((p) => {
-                const active = role.permissions.includes(p.key);
-                return (
-                  <label key={p.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 4, border: `1px solid ${active ? "var(--primary)" : "var(--border)"}`, background: active ? "var(--primary-light)" : "var(--surface-2)", cursor: "pointer", fontSize: 12, fontWeight: active ? 600 : 400, color: active ? "var(--primary)" : "var(--muted)" }}>
-                    <input type="checkbox" checked={active} onChange={() => togglePermission(role, p.key)} style={{ accentColor: "var(--primary)" }} />
-                    {p.key}
-                  </label>
-                );
-              })}
+            <div className="card-body">
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                {permissions?.map((p) => {
+                  const active = role.permissions.includes(p.key);
+                  return (
+                    <label key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 6, border: `1px solid ${active ? "var(--primary)" : "var(--border)"}`, background: active ? "var(--primary-light)" : "var(--surface-2)", cursor: "pointer", fontSize: 14, fontWeight: active ? 600 : 500, color: active ? "var(--primary-dark)" : "var(--muted)" }}>
+                      <input type="checkbox" checked={active} onChange={() => togglePermission(role, p.key)} style={{ accentColor: "var(--primary)", width: 16, height: 16 }} />
+                      {p.key}
+                    </label>
+                  );
+                })}
+              </div>
             </div>
           </div>
         ))}

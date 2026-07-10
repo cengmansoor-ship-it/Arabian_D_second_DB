@@ -16,10 +16,19 @@ export default function AuditLogPage() {
 
   return (
     <div>
-      <p className="page-title">د بدلونونو راپور</p>
-      <p className="page-sub">د سیسټم ټولې کړنې — {data?.total ?? "..."} ثبتونه</p>
+      <div className="page-header">
+        <h1 className="page-title">د بدلونونو راپور</h1>
+        <div className="page-breadcrumb">
+          <span>کورپاڼه</span>
+          <span>/</span>
+          <span>راپورونه</span>
+        </div>
+      </div>
 
       <div className="card" style={{ overflow: "hidden" }}>
+        <div className="card-header">
+           <div>د سیسټم ټولې کړنې — {data?.total ?? "..."} ثبتونه</div>
+        </div>
         <table className="fl-table">
           <thead>
             <tr>
@@ -33,7 +42,7 @@ export default function AuditLogPage() {
           <tbody>
             {data?.items.map((e) => (
               <tr key={e.id}>
-                <td style={{ fontSize: 12, color: "var(--muted)", whiteSpace: "nowrap" }}>
+                <td style={{ fontSize: 13, color: "var(--muted)", whiteSpace: "nowrap" }}>
                   {new Date(e.createdAt).toLocaleString("en-GB")}
                 </td>
                 <td style={{ fontWeight: 500 }}>{e.username ?? "—"}</td>
@@ -42,14 +51,14 @@ export default function AuditLogPage() {
                     {e.action}
                   </span>
                 </td>
-                <td style={{ color: "var(--muted)", fontSize: 13 }}>{e.entityType}</td>
-                <td style={{ fontSize: 12, color: "var(--muted)" }}>{e.entityId ?? "—"}</td>
+                <td style={{ color: "var(--muted)", fontSize: 14 }}>{e.entityType}</td>
+                <td style={{ fontSize: 13, color: "var(--muted)" }}>{e.entityId ?? "—"}</td>
               </tr>
             ))}
             {data?.items.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ textAlign: "center", padding: 32, color: "var(--muted)" }}>
-                  <ScrollText size={28} style={{ margin: "0 auto 8px", opacity: 0.3 }} />
+                <td colSpan={5} style={{ textAlign: "center", padding: 40, color: "var(--muted)" }}>
+                  <ScrollText size={32} style={{ margin: "0 auto 12px", opacity: 0.3 }} />
                   هیڅ راپور ونه موندل شو.
                 </td>
               </tr>

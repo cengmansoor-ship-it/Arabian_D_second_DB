@@ -54,68 +54,80 @@ export default function PartiesPage() {
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-        <p className="page-title" style={{ margin: 0 }}>اشخاص او پیرودونکي</p>
+      <div className="page-header">
+        <h1 className="page-title">اشخاص او پیرودونکي</h1>
+        <div className="page-breadcrumb">
+          <span>کورپاڼه</span>
+          <span>/</span>
+          <span>اشخاص</span>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
+        <p style={{ margin: 0, color: "var(--muted)", fontSize: 15, fontWeight: 500 }}>{parties?.length ?? "..."} اشخاص</p>
         <button className="btn btn-primary" onClick={() => setShowForm((v) => !v)}>
-          <UserPlus size={15} />نوی شخص
+          <UserPlus size={18} /> نوی شخص
         </button>
       </div>
-      <p className="page-sub">{parties?.length ?? "..."} اشخاص</p>
 
       {/* Create form */}
       {showForm && (
-        <div className="card" style={{ padding: 24, marginBottom: 24 }}>
-          <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 16, borderBottom: "1px solid var(--border)", paddingBottom: 12 }}>د نوي شخص معلومات</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 12, marginBottom: 12 }}>
-            <div style={{ gridColumn: "1/-1" }}>
-              <label className="form-label">ډول</label>
-              <select className="form-select" value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as PartyType }))}>
-                {Object.entries(TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
-            </div>
-            {[
-              { key: "name", label: "نوم", required: true },
-              { key: "fatherName", label: "د پلار نوم" },
-              { key: "grandfatherName", label: "د نیکه نوم" },
-              { key: "tazkiraNumber", label: "تذکره شمېره" },
-              { key: "taxRegNumber", label: "د مالیې شمېره" },
-              { key: "phone1", label: "تلیفون ۱" },
-              { key: "phone2", label: "تلیفون ۲" },
-            ].map(({ key, label }) => (
-              <div key={key}>
-                <label className="form-label">{label}</label>
-                <input className="form-input" placeholder={label} value={(form as Record<string, string>)[key]} onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))} onBlur={key === "name" ? (e) => checkDuplicates(e.target.value) : undefined} />
-              </div>
-            ))}
-            <div style={{ gridColumn: "1/-1" }}>
-              <label className="form-label">آدرس</label>
-              <input className="form-input" placeholder="آدرس" value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} />
-            </div>
-            <div style={{ gridColumn: "1/-1" }}>
-              <label className="form-label">یادداشتونه</label>
-              <textarea className="form-input" placeholder="یادداشتونه" value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} style={{ height: 72, resize: "vertical" }} />
-            </div>
+        <div className="card" style={{ marginBottom: 28 }}>
+          <div className="card-header">
+            <div>د نوي شخص معلومات</div>
           </div>
-          {duplicates.length > 0 && (
-            <div style={{ background: "var(--warning-light)", color: "#92400E", padding: "10px 14px", borderRadius: 4, fontSize: 13, marginBottom: 10 }}>
-              ⚠ ورته اشخاص وموندل شول: {duplicates.map((d) => d.name).join("، ")}
+          <div className="card-body">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))", gap: 20, marginBottom: 20 }}>
+              <div style={{ gridColumn: "1/-1" }}>
+                <label className="form-label">ډول</label>
+                <select className="form-select" value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as PartyType }))}>
+                  {Object.entries(TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                </select>
+              </div>
+              {[
+                { key: "name", label: "نوم", required: true },
+                { key: "fatherName", label: "د پلار نوم" },
+                { key: "grandfatherName", label: "د نیکه نوم" },
+                { key: "tazkiraNumber", label: "تذکره شمېره" },
+                { key: "taxRegNumber", label: "د مالیې شمېره" },
+                { key: "phone1", label: "تلیفون ۱" },
+                { key: "phone2", label: "تلیفون ۲" },
+              ].map(({ key, label }) => (
+                <div key={key}>
+                  <label className="form-label">{label}</label>
+                  <input className="form-input" placeholder={label} value={(form as Record<string, string>)[key]} onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))} onBlur={key === "name" ? (e) => checkDuplicates(e.target.value) : undefined} />
+                </div>
+              ))}
+              <div style={{ gridColumn: "1/-1" }}>
+                <label className="form-label">آدرس</label>
+                <input className="form-input" placeholder="آدرس" value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} />
+              </div>
+              <div style={{ gridColumn: "1/-1" }}>
+                <label className="form-label">یادداشتونه</label>
+                <textarea className="form-input" placeholder="یادداشتونه" value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} style={{ height: 100, padding: "12px 16px", resize: "vertical" }} />
+              </div>
             </div>
-          )}
-          {error && <div style={{ color: "var(--danger)", fontSize: 13, marginBottom: 10 }}>{error}</div>}
-          <div style={{ display: "flex", gap: 10 }}>
-            <button className="btn btn-primary" onClick={() => createMutation.mutate()} disabled={!form.name.trim() || createMutation.isPending}>جوړول</button>
-            <button className="btn btn-outline" onClick={() => setShowForm(false)}>لغوه</button>
+            {duplicates.length > 0 && (
+              <div style={{ background: "var(--warning-light)", color: "#92400E", padding: "12px 16px", borderRadius: 6, fontSize: 14, fontWeight: 500, marginBottom: 16 }}>
+                ⚠ ورته اشخاص وموندل شول: {duplicates.map((d) => d.name).join("، ")}
+              </div>
+            )}
+            {error && <div style={{ color: "var(--danger)", fontSize: 14, marginBottom: 16 }}>{error}</div>}
+            <div style={{ display: "flex", gap: 12, borderTop: "1px solid var(--border)", paddingTop: 20 }}>
+              <button className="btn btn-primary" onClick={() => createMutation.mutate()} disabled={!form.name.trim() || createMutation.isPending}>جوړول</button>
+              <button className="btn btn-outline" onClick={() => setShowForm(false)}>لغوه</button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Search / filter */}
-      <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-        <div style={{ flex: 1, position: "relative" }}>
-          <Search size={15} style={{ position: "absolute", top: "50%", right: 12, transform: "translateY(-50%)", color: "var(--muted)", pointerEvents: "none" }} />
-          <input className="form-input" placeholder="لټون (نوم، تذکره، تلیفون)" value={q} onChange={(e) => setQ(e.target.value)} style={{ paddingRight: 36 }} />
+      <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
+        <div style={{ flex: 1, position: "relative", maxWidth: 400 }}>
+          <Search size={18} style={{ position: "absolute", top: "50%", right: 16, transform: "translateY(-50%)", color: "var(--muted)", pointerEvents: "none" }} />
+          <input className="form-input" placeholder="لټون (نوم، تذکره، تلیفون)" value={q} onChange={(e) => setQ(e.target.value)} style={{ paddingRight: 44 }} />
         </div>
-        <select className="form-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} style={{ width: 200 }}>
+        <select className="form-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} style={{ width: 220 }}>
           <option value="">ټول ډولونه</option>
           {Object.entries(TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
@@ -130,15 +142,15 @@ export default function PartiesPage() {
           <tbody>
             {parties?.map((p) => (
               <tr key={p.id}>
-                <td style={{ fontWeight: 500 }}>{p.name}</td>
+                <td style={{ fontWeight: 600 }}>{p.name}</td>
                 <td><span className="badge badge-muted">{TYPE_LABELS[p.type]}</span></td>
-                <td style={{ color: "var(--muted)", fontSize: 13 }}>{p.tazkiraNumber ?? "—"}</td>
-                <td style={{ color: "var(--muted)", fontSize: 13 }}>{p.phone1 ?? "—"}</td>
-                <td><Link to={`/parties/${p.id}`} style={{ color: "var(--primary)", fontSize: 13, fontWeight: 500 }}>لیدل</Link></td>
+                <td style={{ color: "var(--muted)", fontSize: 14 }}>{p.tazkiraNumber ?? "—"}</td>
+                <td style={{ color: "var(--muted)", fontSize: 14 }}>{p.phone1 ?? "—"}</td>
+                <td><Link to={`/parties/${p.id}`} style={{ color: "var(--primary)", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>لیدل</Link></td>
               </tr>
             ))}
             {parties?.length === 0 && (
-              <tr><td colSpan={5} style={{ textAlign: "center", padding: 32, color: "var(--muted)" }}>هیڅ شخص ونه موندل شو.</td></tr>
+              <tr><td colSpan={5} style={{ textAlign: "center", padding: 40, color: "var(--muted)" }}>هیڅ شخص ونه موندل شو.</td></tr>
             )}
           </tbody>
         </table>

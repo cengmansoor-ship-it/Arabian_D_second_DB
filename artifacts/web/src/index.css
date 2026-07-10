@@ -11,15 +11,15 @@
   --sidebar-bg:     #1C2434;
   --sidebar-text:   #DEE4EE;
   --sidebar-muted:  #8A99AF;
-  --sidebar-active-bg: #253247;
-  --sidebar-hover-bg:  #253247;
+  --sidebar-active-bg: #333A48;
+  --sidebar-hover-bg:  #333A48;
   --sidebar-border: #2E3A4E;
-  --sidebar-width:  260px;
+  --sidebar-width:  290px;
 
   /* Body / surfaces */
-  --bg:             #EFF4FB;
+  --bg:             #F1F5F9;
   --surface:        #FFFFFF;
-  --surface-2:      #F7F9FC;
+  --surface-2:      #F8FAFC;
   --border:         #E2E8F0;
   --border-dark:    #CBD5E0;
 
@@ -39,12 +39,12 @@
   --info-light:     #DBEAFE;
 
   /* Card */
-  --card-radius:    6px;
-  --card-shadow:    0 8px 13px -3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.03);
+  --card-radius:    10px;
+  --card-shadow:    0px 8px 13px -3px rgba(0, 0, 0, 0.07);
 
   /* Topbar */
   --topbar-bg:      #FFFFFF;
-  --topbar-height:  56px;
+  --topbar-height:  80px;
 }
 
 * { box-sizing: border-box; }
@@ -76,14 +76,29 @@ input, select, button, textarea { font-family: inherit; }
   border: 1px solid var(--border);
 }
 
+.card-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-body {
+  padding: 24px;
+}
+
 /* ── Utility: Badge ─────────────────────────────────────────────────── */
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 10px;
+  padding: 4px 12px;
   border-radius: 9999px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
 }
 .badge-success { background: var(--success-light); color: #065F46; }
 .badge-warning { background: var(--warning-light); color: #92400E; }
@@ -95,64 +110,69 @@ input, select, button, textarea { font-family: inherit; }
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 38px;
-  padding: 0 16px;
-  border-radius: 4px;
-  font-size: 14px;
+  gap: 8px;
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 6px;
+  font-size: 15px;
   font-weight: 500;
   cursor: pointer;
   border: none;
-  transition: opacity 0.15s, background 0.15s;
+  transition: opacity 0.15s, background 0.15s, transform 0.1s;
 }
+.btn:active:not(:disabled) { transform: translateY(1px); }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .btn-primary  { background: var(--primary);  color: #fff; }
 .btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
 .btn-success  { background: var(--success);  color: #fff; }
 .btn-danger   { background: var(--danger);   color: #fff; }
-.btn-outline  { background: transparent; color: var(--text); border: 1px solid var(--border-dark); }
-.btn-outline:hover:not(:disabled) { background: var(--surface-2); }
+.btn-outline  { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn-outline:hover:not(:disabled) { background: var(--surface-2); border-color: var(--border-dark); }
 .btn-ghost    { background: transparent; color: var(--muted); }
-.btn-ghost:hover:not(:disabled)   { background: var(--surface-2); }
-.btn-sm { height: 30px; padding: 0 12px; font-size: 13px; }
+.btn-ghost:hover:not(:disabled)   { background: var(--surface-2); color: var(--text); }
+.btn-sm { height: 34px; padding: 0 16px; font-size: 14px; }
 
 /* ── Utility: Form ──────────────────────────────────────────────────── */
-.form-label { display: block; margin-bottom: 4px; font-size: 13px; font-weight: 500; color: var(--text); }
+.form-label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--text); }
 .form-input {
   width: 100%;
-  height: 38px;
-  padding: 0 12px;
-  border: 1px solid var(--border-dark);
-  border-radius: 4px;
-  font-size: 14px;
+  height: 46px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 15px;
   background: var(--surface);
   color: var(--text);
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(60,80,224,0.1); }
 .form-select {
   width: 100%;
-  height: 38px;
-  padding: 0 12px;
-  border: 1px solid var(--border-dark);
-  border-radius: 4px;
-  font-size: 14px;
+  height: 46px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 15px;
   background: var(--surface);
   color: var(--text);
   outline: none;
   cursor: pointer;
   appearance: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
+.form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(60,80,224,0.1); }
 
 /* ── Utility: Table ─────────────────────────────────────────────────── */
-.fl-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.fl-table thead tr { background: var(--surface-2); border-bottom: 2px solid var(--border); }
-.fl-table th { padding: 10px 14px; text-align: right; font-weight: 600; color: var(--muted); font-size: 13px; white-space: nowrap; }
-.fl-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
+.fl-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.fl-table thead tr { background: var(--surface-2); border-bottom: 1px solid var(--border); }
+.fl-table th { padding: 16px 24px; text-align: right; font-weight: 600; color: var(--muted); font-size: 14px; white-space: nowrap; }
+.fl-table td { padding: 16px 24px; border-bottom: 1px solid var(--border); color: var(--text); }
 .fl-table tbody tr:hover { background: var(--surface-2); }
 .fl-table tbody tr:last-child td { border-bottom: none; }
 
 /* ── Page header ────────────────────────────────────────────────────── */
-.page-title { font-size: 20px; font-weight: 700; color: var(--text); margin: 0 0 4px 0; }
-.page-sub   { font-size: 13px; color: var(--muted); margin: 0 0 20px 0; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+.page-title { font-size: 26px; font-weight: 700; color: var(--text); margin: 0; }
+.page-breadcrumb { font-size: 14px; font-weight: 500; color: var(--muted); display: flex; gap: 8px; }
+.page-breadcrumb span:last-child { color: var(--primary); }
