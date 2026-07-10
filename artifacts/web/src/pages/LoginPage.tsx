@@ -11,9 +11,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && user) {
-    return <Navigate to="/" replace />;
-  }
+  if (!loading && user) return <Navigate to="/" replace />;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -29,39 +27,100 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex h-screen items-center justify-center bg-[var(--bg)] p-4">
-      <div className="w-full max-w-sm rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-sm">
-        <div className="mb-6 flex flex-col items-center gap-2 text-center">
-          <Building2 className="h-10 w-10 text-[var(--primary)]" />
-          <h1 className="text-lg font-bold">اربین ډي استوګنځای</h1>
-          <p className="text-sm text-[var(--muted)]">د مدیریت سیسټم ته ننوتل</p>
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "var(--sidebar-bg)",
+        padding: 16,
+      }}
+    >
+      {/* Card */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          background: "var(--surface)",
+          borderRadius: 10,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+          overflow: "hidden",
+        }}
+      >
+        {/* Header band */}
+        <div
+          style={{
+            background: "var(--primary)",
+            padding: "28px 32px 24px",
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: 12,
+              background: "rgba(255,255,255,0.2)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 12px",
+            }}
+          >
+            <Building2 size={28} color="#fff" />
+          </div>
+          <div style={{ color: "#fff", fontSize: 18, fontWeight: 700, marginBottom: 4 }}>
+            اربین ډي استوګنځای
+          </div>
+          <div style={{ color: "rgba(255,255,255,0.75)", fontSize: 13 }}>
+            د مدیریت سیسټم ته ننوتل
+          </div>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium">کارن نوم</label>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ padding: "28px 32px" }}>
+          <div style={{ marginBottom: 16 }}>
+            <label className="form-label">کارن نوم</label>
             <input
+              className="form-input"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--primary)]"
               autoFocus
               required
+              placeholder="admin"
             />
           </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">پټنوم</label>
+          <div style={{ marginBottom: 20 }}>
+            <label className="form-label">پټنوم</label>
             <input
               type="password"
+              className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--primary)]"
               required
+              placeholder="••••••••"
             />
           </div>
-          {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
+          {error && (
+            <div
+              style={{
+                background: "var(--danger-light)",
+                color: "var(--danger)",
+                padding: "8px 12px",
+                borderRadius: 4,
+                fontSize: 13,
+                marginBottom: 16,
+              }}
+            >
+              {error}
+            </div>
+          )}
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-lg bg-[var(--primary)] py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--primary-dark)] disabled:opacity-60"
+            className="btn btn-primary"
+            style={{ width: "100%", justifyContent: "center", height: 42, fontSize: 15 }}
           >
             {submitting ? "..." : "ننوتل"}
           </button>

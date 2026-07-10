@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { api, type Project, type ProjectStatus } from "../lib/api";
+import { FolderPlus } from "lucide-react";
 
 const STATUS_LABELS: Record<ProjectStatus, string> = {
   draft: "مسوده",
@@ -9,6 +10,14 @@ const STATUS_LABELS: Record<ProjectStatus, string> = {
   on_hold: "ځنډول شوی",
   completed: "بشپړ شوی",
   archived: "آرشیف شوی",
+};
+
+const STATUS_BADGE: Record<ProjectStatus, string> = {
+  draft: "badge-muted",
+  active: "badge-success",
+  on_hold: "badge-warning",
+  completed: "badge-info",
+  archived: "badge-muted",
 };
 
 export default function ProjectsPage() {
@@ -20,11 +29,7 @@ export default function ProjectsPage() {
 
   const createMutation = useMutation({
     mutationFn: () => api.post<Project>("/projects", form),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["projects"] });
-      setForm({ name: "", code: "" });
-      setError(null);
-    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["projects"] }); setForm({ name: "", code: "" }); setError(null); },
     onError: (err) => setError(err instanceof Error ? err.message : "ستونزه رامنځته شوه"),
   });
 
@@ -34,59 +39,62 @@ export default function ProjectsPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-bold">پروژې</h1>
+    <div>
+      <p className="page-title">پروژې</p>
+      <p className="page-sub">د ملکیتي پروژو اداره</p>
 
-      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
-        <h2 className="mb-4 font-semibold">نوې پروژه</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <input
-            placeholder="د پروژې نوم"
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--primary)]"
-          />
-          <input
-            placeholder="کوډ (لکه ADR)"
-            value={form.code}
-            onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
-            className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--primary)]"
-          />
+      {/* Create */}
+      <div className="card" style={{ padding: 24, marginBottom: 24 }}>
+        <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 16, borderBottom: "1px solid var(--border)", paddingBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+          <FolderPlus size={17} />نوې پروژه
         </div>
-        {error && <p className="mt-2 text-sm text-[var(--danger)]">{error}</p>}
-        <button
-          onClick={() => createMutation.mutate()}
-          disabled={!form.name.trim() || !form.code.trim() || createMutation.isPending}
-          className="mt-3 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--primary-dark)] disabled:opacity-60"
-        >
-          جوړول
-        </button>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <label className="form-label">د پروژې نوم</label>
+            <input className="form-input" placeholder="اربین ډي ریزیډنس" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+          </div>
+          <div style={{ width: 140 }}>
+            <label className="form-label">کوډ</label>
+            <input className="form-input" placeholder="ADR" value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))} />
+          </div>
+          <div style={{ display: "flex", alignItems: "flex-end" }}>
+            <button className="btn btn-primary" onClick={() => createMutation.mutate()} disabled={!form.name.trim() || !form.code.trim() || createMutation.isPending}>
+              جوړول
+            </button>
+          </div>
+        </div>
+        {error && <div style={{ color: "var(--danger)", fontSize: 13, marginTop: 10 }}>{error}</div>}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Cards grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px,1fr))", gap: 18 }}>
         {projects?.map((p) => (
-          <div key={p.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
-            <div className="mb-2 flex items-center justify-between">
-              <Link to={`/projects/${p.id}`} className="font-semibold text-[var(--primary)] hover:underline">
+          <div key={p.id} className="card" style={{ padding: 20 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
+              <Link to={`/projects/${p.id}`} style={{ fontWeight: 700, fontSize: 15, color: "var(--primary)", textDecoration: "none" }}>
                 {p.name}
               </Link>
-              <span className="text-xs text-[var(--muted)]">{p.code}</span>
+              <span className={`badge ${STATUS_BADGE[p.status]}`}>{STATUS_LABELS[p.status]}</span>
             </div>
-            {p.description && <p className="mb-3 text-sm text-[var(--muted)]">{p.description}</p>}
+            <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 14 }}>کوډ: {p.code}</div>
+            {p.description && <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 14 }}>{p.description}</div>}
             <select
+              className="form-select"
               value={p.status}
               onChange={(e) => statusMutation.mutate({ id: p.id, status: e.target.value as ProjectStatus })}
-              className="w-full rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm outline-none focus:border-[var(--primary)]"
+              style={{ fontSize: 13 }}
             >
               {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
+                <option key={value} value={value}>{label}</option>
               ))}
             </select>
           </div>
         ))}
-        {projects?.length === 0 && <p className="text-sm text-[var(--muted)]">تر اوسه هیڅ پروژه نشته.</p>}
+        {projects?.length === 0 && (
+          <div style={{ gridColumn: "1/-1", textAlign: "center", color: "var(--muted)", padding: "48px 0", fontSize: 14 }}>
+            تر اوسه هیڅ پروژه نشته.
+          </div>
+        )}
       </div>
     </div>
   );

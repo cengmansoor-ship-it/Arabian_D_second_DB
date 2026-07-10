@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type UnitType } from "../lib/api";
+import { Tags, Plus } from "lucide-react";
 
 export default function UnitTypesPage() {
   const qc = useQueryClient();
@@ -10,41 +11,40 @@ export default function UnitTypesPage() {
 
   const createMutation = useMutation({
     mutationFn: () => api.post<UnitType>("/unit-types", { name }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["unit-types"] });
-      setName("");
-      setError(null);
-    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["unit-types"] }); setName(""); setError(null); },
     onError: (err) => setError(err instanceof Error ? err.message : "ستونزه رامنځته شوه"),
   });
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-bold">د واحدونو ډولونه</h1>
-      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
-        <div className="flex gap-3">
-          <input
-            placeholder="نوی ډول (لکه Studio)"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--primary)]"
-          />
-          <button
-            onClick={() => createMutation.mutate()}
-            disabled={!name.trim() || createMutation.isPending}
-            className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-          >
-            زیاتول
+    <div>
+      <p className="page-title">د واحدونو ډولونه</p>
+      <p className="page-sub">د ملکیت واحدونو ډول مالیکانه لیست</p>
+
+      <div className="card" style={{ padding: 24, marginBottom: 24 }}>
+        <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 16, borderBottom: "1px solid var(--border)", paddingBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+          <Plus size={16} />نوی ډول
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <input className="form-input" placeholder="لکه: Studio، 1-Bedroom، Shop" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && name.trim() && createMutation.mutate()} style={{ flex: 1, maxWidth: 340 }} />
+          <button className="btn btn-primary" onClick={() => createMutation.mutate()} disabled={!name.trim() || createMutation.isPending}>
+            <Plus size={15} />زیاتول
           </button>
         </div>
-        {error && <p className="mt-2 text-sm text-[var(--danger)]">{error}</p>}
+        {error && <div style={{ color: "var(--danger)", fontSize: 13, marginTop: 10 }}>{error}</div>}
       </div>
-      <div className="flex flex-wrap gap-2">
-        {types?.map((t) => (
-          <span key={t.id} className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-sm">
-            {t.name}
-          </span>
-        ))}
+
+      <div className="card" style={{ padding: 20 }}>
+        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+          <Tags size={15} />ثبت شوي ډولونه ({types?.length ?? 0})
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+          {types?.map((t) => (
+            <span key={t.id} style={{ padding: "6px 14px", borderRadius: 4, border: "1px solid var(--border)", background: "var(--surface-2)", fontSize: 14, color: "var(--text)" }}>
+              {t.name}
+            </span>
+          ))}
+          {types?.length === 0 && <span style={{ color: "var(--muted)", fontSize: 13 }}>هیڅ ډول نشته.</span>}
+        </div>
       </div>
     </div>
   );
