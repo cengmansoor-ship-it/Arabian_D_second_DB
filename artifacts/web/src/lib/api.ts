@@ -255,3 +255,48 @@ export interface PartyLedgerResponse {
   lines: JournalLineEntry[];
   balances: Record<string, { debit: string; credit: string; net: string }>;
 }
+
+export interface UnitWithLocation extends Unit {
+  floor?: Floor & { block?: Block };
+}
+
+export type SaleStatus = "draft" | "reserved" | "active" | "fully_paid" | "cancelled" | "reversed";
+
+export interface Sale {
+  id: number;
+  saleNumber: string;
+  contractNumber: string | null;
+  unitId: number;
+  partyId: number;
+  price: string;
+  discount: string;
+  finalPrice: string;
+  currencyCode: string;
+  saleDate: string;
+  paymentType: string | null;
+  status: SaleStatus;
+  notes: string | null;
+  createdAt: string;
+  balance?: string;
+  party?: Party;
+  unit?: UnitWithLocation;
+  receipts?: SaleReceipt[];
+}
+
+export interface SaleReceipt {
+  id: number;
+  receiptNumber: string;
+  saleId: number;
+  receiptDate: string;
+  amount: string;
+  previousBalance: string | null;
+  newBalance: string | null;
+  currencyCode: string;
+  method: string;
+  cashAccountId: number | null;
+  reference: string | null;
+  note: string | null;
+  voidedAt: string | null;
+  voidReason: string | null;
+  createdAt: string;
+}

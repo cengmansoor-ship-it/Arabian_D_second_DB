@@ -7,6 +7,8 @@ export class SaleReceipt extends Model<InferAttributes<SaleReceipt>, InferCreati
   declare saleId: number;
   declare receiptDate: string;
   declare amount: string;
+  declare previousBalance: CreationOptional<string | null>;
+  declare newBalance: CreationOptional<string | null>;
   declare currencyCode: string;
   declare method: CreationOptional<string>;
   declare cashAccountId: CreationOptional<number | null>;
@@ -26,6 +28,8 @@ SaleReceipt.init(
     saleId: { type: DataTypes.INTEGER, allowNull: false },
     receiptDate: { type: DataTypes.DATEONLY, allowNull: false },
     amount: { type: DataTypes.DECIMAL(20, 4), allowNull: false },
+    previousBalance: { type: DataTypes.DECIMAL(20, 4), allowNull: true },
+    newBalance: { type: DataTypes.DECIMAL(20, 4), allowNull: true },
     currencyCode: { type: DataTypes.STRING(8), allowNull: false },
     method: { type: DataTypes.STRING(32), allowNull: false, defaultValue: "cash" },
     cashAccountId: { type: DataTypes.INTEGER, allowNull: true },

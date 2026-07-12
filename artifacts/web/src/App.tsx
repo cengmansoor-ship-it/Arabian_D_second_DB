@@ -15,6 +15,8 @@ import JournalPage from "./pages/JournalPage";
 import CashAccountsPage from "./pages/CashAccountsPage";
 import PartiesPage from "./pages/PartiesPage";
 import PartyDetailPage from "./pages/PartyDetailPage";
+import SalesPage from "./pages/SalesPage";
+import SaleDetailPage from "./pages/SaleDetailPage";
 
 function Protected({ children }: { children: React.ReactNode }) {
   const { user, loading, justLoggedIn } = useAuth();
@@ -67,6 +69,8 @@ export default function App() {
           <Route path="unit-types" element={<UnitTypesPage />} />
           <Route path="parties" element={<PartiesPage />} />
           <Route path="parties/:id" element={<PartyDetailPage />} />
+          <Route path="sales" element={<SalesPage />} />
+          <Route path="sales/:id" element={<SaleDetailPage />} />
           <Route
             path="journal"
             element={

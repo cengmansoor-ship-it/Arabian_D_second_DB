@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import Decimal from "decimal.js";
+import type { Transaction } from "sequelize";
 import { sequelize } from "./connection";
 import { JournalTransaction, JournalLine, PostingLink, Account } from "./models";
 
@@ -30,7 +31,16 @@ export class PostingError extends Error {}
  * The single entry point for every financial posting in the system (ACCT-01..05).
  * Enforces: debit === credit per currency, idempotency, and one-posting-per-source-per-type.
  */
-export async function postJournal(input: PostJournalInput): Promise<JournalTransaction> {
+/**
+ * Posts a balanced journal transaction.
+ *
+ * If `existingTransaction` is provided, all writes join that transaction instead of opening a
+ * new one — required whenever a caller (e.g. createSale/addSaleReceipt) already holds its own
+ * `sequelize.transaction()`. Sequelize does not auto-nest transactions without CLS, so opening a
+ * second independent transaction here while the caller's is still open causes SQLite to see two
+ * concurrent writers and fail (this was the cause of the sale-creation HTTP 500).
+ */
+export async function postJournal(input: PostJournalInput, existingTransaction?: Transaction): Promise<JournalTransaction> {
   if (input.lines.length < 2) {
     throw new PostingError("A journal transaction requires at least two lines");
   }
@@ -54,7 +64,7 @@ export async function postJournal(input: PostJournalInput): Promise<JournalTrans
     }
   }
 
-  return sequelize.transaction(async (t) => {
+  const run = async (t: Transaction): Promise<JournalTransaction> => {
     if (input.source) {
       const existing = await PostingLink.findOne({
         where: { sourceModule: input.source.module, sourceId: input.source.sourceId, postingType: input.source.postingType },
@@ -109,12 +119,15 @@ export async function postJournal(input: PostJournalInput): Promise<JournalTrans
     }
 
     return transaction;
-  });
+  };
+
+  return existingTransaction ? run(existingTransaction) : sequelize.transaction(run);
 }
 
 export async function reverseJournal(
   transactionId: number,
   params: { userId: number; reason: string },
+  existingTransaction?: Transaction,
 ): Promise<JournalTransaction> {
   const original = await JournalTransaction.findByPk(transactionId, { include: [{ model: JournalLine, as: "lines" }] });
   if (!original) throw new PostingError("Transaction not found");
@@ -131,7 +144,7 @@ export async function reverseJournal(
     description: l.description ? `Reversal: ${l.description}` : "Reversal",
   }));
 
-  return sequelize.transaction(async (t) => {
+  const run = async (t: Transaction): Promise<JournalTransaction> => {
     original.voidedAt = new Date();
     original.voidedByUserId = params.userId;
     original.voidReason = params.reason;
@@ -166,5 +179,7 @@ export async function reverseJournal(
     }
 
     return reversal;
-  });
+  };
+
+  return existingTransaction ? run(existingTransaction) : sequelize.transaction(run);
 }
