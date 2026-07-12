@@ -1,6 +1,7 @@
 import { sequelize } from "./connection";
 import { User, Role, Permission, CompanySetting, Currency, DocumentSequence, UnitType, Account, CashAccount } from "./models";
 import { hashPassword } from "./auth";
+import { runMigrations } from "./migrations";
 
 const CORE_PERMISSIONS = [
   "users.manage",
@@ -47,6 +48,7 @@ const CORE_DOCUMENT_SEQUENCES = [
 export async function ensureDatabaseReady(): Promise<void> {
   await sequelize.authenticate();
   await sequelize.sync();
+  await runMigrations();
 
   const [adminRole] = await Role.findOrCreate({
     where: { name: "admin" },

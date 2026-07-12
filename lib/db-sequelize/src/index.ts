@@ -5,3 +5,4 @@ export * from "./seed";
 export * from "./posting";
 export * from "./numbering";
 export * from "./sales-service";
+export * from "./migrations/runner";

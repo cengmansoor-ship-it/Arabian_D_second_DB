@@ -8,11 +8,18 @@ export class ApiError extends Error {
   }
 }
 
+function readCookie(name: string): string | null {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const csrfToken = readCookie("csrf_token");
   const res = await fetch(`${BASE}${path}`, {
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
       ...(options.headers ?? {}),
     },
     ...options,
@@ -38,6 +45,7 @@ export const api = {
     request<T>(path, { method: "POST", body: body !== undefined ? JSON.stringify(body) : undefined }),
   put: <T,>(path: string, body?: unknown) =>
     request<T>(path, { method: "PUT", body: body !== undefined ? JSON.stringify(body) : undefined }),
+  delete: <T,>(path: string) => request<T>(path, { method: "DELETE" }),
 };
 
 export interface CurrentUser {
@@ -69,6 +77,9 @@ export interface ManagedUser {
   isActive: boolean;
   roles: string[];
   createdAt: string;
+  failedLoginAttempts: number;
+  isLocked: boolean;
+  lockedUntil: string | null;
 }
 
 export interface RoleWithPermissions {

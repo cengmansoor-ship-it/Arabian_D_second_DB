@@ -8,6 +8,7 @@ const router: IRouter = Router();
 
 async function serializeUser(user: User) {
   const roles = await user.getRoles();
+  const isLocked = !!(user.lockedUntil && user.lockedUntil.getTime() > Date.now());
   return {
     id: user.id,
     username: user.username,
@@ -15,6 +16,9 @@ async function serializeUser(user: User) {
     isActive: user.isActive,
     roles: roles.map((r) => r.name),
     createdAt: user.createdAt,
+    failedLoginAttempts: user.failedLoginAttempts,
+    isLocked,
+    lockedUntil: user.lockedUntil,
   };
 }
 
@@ -69,6 +73,23 @@ router.put("/:id", requireAuth, requirePermission("users.manage"), async (req: A
     entityType: "User",
     entityId: String(user.id),
     details: { fullName, isActive, roleNames },
+  });
+  res.json(await serializeUser(user));
+});
+
+/** Administrator-only: unlock an account that was locked after repeated failed logins. */
+router.post("/:id/unlock", requireAuth, requirePermission("users.manage"), async (req: AuthedRequest, res) => {
+  const user = await User.findByPk(Number(req.params.id));
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+  await user.update({ failedLoginAttempts: 0, lockedUntil: null });
+  await recordAudit({
+    userId: req.auth!.userId,
+    action: "account_unlocked",
+    entityType: "User",
+    entityId: String(user.id),
   });
   res.json(await serializeUser(user));
 });

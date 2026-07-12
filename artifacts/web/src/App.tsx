@@ -1,7 +1,8 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./lib/auth";
 import AppShell from "./components/AppShell";
 import LoginPage from "./pages/LoginPage";
+import WelcomePage from "./pages/WelcomePage";
 import DashboardPage from "./pages/DashboardPage";
 import SettingsPage from "./pages/SettingsPage";
 import UsersPage from "./pages/UsersPage";
@@ -16,12 +17,16 @@ import PartiesPage from "./pages/PartiesPage";
 import PartyDetailPage from "./pages/PartyDetailPage";
 
 function Protected({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, justLoggedIn } = useAuth();
+  const location = useLocation();
   if (loading) {
     return <div className="flex h-screen items-center justify-center text-gray-500">... بارېدل</div>;
   }
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+  if (justLoggedIn && location.pathname !== "/welcome") {
+    return <Navigate to="/welcome" replace />;
   }
   return <>{children}</>;
 }
@@ -39,6 +44,14 @@ export default function App() {
     <AuthProvider>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/welcome"
+          element={
+            <Protected>
+              <WelcomePage />
+            </Protected>
+          }
+        />
         <Route
           path="/"
           element={

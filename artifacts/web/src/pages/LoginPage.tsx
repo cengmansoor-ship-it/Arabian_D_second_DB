@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && user) return <Navigate to="/" replace />;
+  if (!loading && user) return <Navigate to="/welcome" replace />;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -21,7 +21,13 @@ export default function LoginPage() {
     try {
       await login(username, password);
     } catch (err) {
-      setError(err instanceof ApiError ? "کارن نوم یا پټنوم سم نه دی" : "د سرور سره وصل کیدل ونشول");
+      if (err instanceof ApiError && err.status === 423) {
+        setError("ستاسو حساب د ناسمو هڅو له امله بند شوی دی. مهرباني وکړئ له اداره کوونکي سره اړیکه ونیسئ.");
+      } else if (err instanceof ApiError) {
+        setError("کارن نوم یا پټنوم سم نه دی");
+      } else {
+        setError("د سرور سره وصل کیدل ونشول");
+      }
     } finally {
       setSubmitting(false);
     }
