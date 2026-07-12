@@ -36,7 +36,7 @@ const pieData = [
   { name: 'Unknown', value: 56 },
 ];
 
-const COLORS = ['#3C50E0', '#6577F3', '#8FD0EF', '#0FADCF'];
+const COLORS = ['#465FFF', '#7592FF', '#0BA5EC', '#12B76A'];
 
 export default function DashboardPage() {
   const { user } = useAuth();

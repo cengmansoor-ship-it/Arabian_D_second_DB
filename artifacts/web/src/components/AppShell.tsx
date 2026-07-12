@@ -65,33 +65,35 @@ export default function AppShell() {
             display: "flex",
             alignItems: "center",
             gap: 12,
-            padding: "24px 24px",
+            padding: "22px 24px",
             minWidth: "var(--sidebar-width)",
+            borderBottom: "1px solid var(--sidebar-border)",
+            marginBottom: 16,
           }}
         >
           <div
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: 8,
-              background: "var(--primary)",
+              width: 44,
+              height: 44,
+              borderRadius: "50%",
+              background: "rgba(255,255,255,0.12)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,
             }}
           >
-            <Building2 size={24} color="#fff" />
+            <Building2 size={22} color="#fff" />
           </div>
           <div style={{ overflow: "hidden" }}>
-            <div style={{ color: "#fff", fontWeight: 700, fontSize: 22, lineHeight: 1.2, whiteSpace: "nowrap" }}>
-              اربین ډي
+            <div style={{ color: "#fff", fontWeight: 700, fontSize: 16, lineHeight: 1.3, whiteSpace: "nowrap" }}>
+              اربین ډي استوګنځای
             </div>
           </div>
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, overflowY: "auto", padding: "12px 16px", minWidth: "var(--sidebar-width)" }}>
+        <nav style={{ flex: 1, overflowY: "auto", padding: "0 16px", minWidth: "var(--sidebar-width)" }}>
           {navGroups.map((group) => {
             if (group.adminOnly && !isAdmin) return null;
             const visibleItems = group.items.filter((item) => !item.adminOnly || isAdmin);
@@ -101,53 +103,54 @@ export default function AppShell() {
                 <div
                   style={{
                     color: "var(--sidebar-muted)",
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: 600,
                     letterSpacing: "0.05em",
+                    textTransform: "uppercase",
                     padding: "0 12px",
-                    marginBottom: 12,
+                    marginBottom: 10,
                   }}
                 >
                   {group.label}
                 </div>
-                {visibleItems.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.end}
-                    style={({ isActive }) => ({
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      padding: "10px 16px",
-                      borderRadius: 4,
-                      marginBottom: 4,
-                      textDecoration: "none",
-                      fontSize: 15,
-                      fontWeight: 500,
-                      color: isActive ? "#fff" : "var(--sidebar-text)",
-                      background: isActive ? "var(--sidebar-active-bg)" : "transparent",
-                      transition: "background 0.15s, color 0.15s",
-                    })}
-                    onMouseEnter={(e) => {
-                      const el = e.currentTarget;
-                      if (el.style.background === "transparent" || el.style.background === "") {
-                        el.style.background = "var(--sidebar-hover-bg)";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      const el = e.currentTarget;
-                      if (!el.classList.contains("active")) {
-                        // React router dom adds 'active' class by default
-                        el.style.background = "transparent";
-                      }
-                    }}
-                    className={({ isActive }) => (isActive ? "active" : "")}
-                  >
-                    <item.icon size={20} style={{ flexShrink: 0 }} />
-                    <span style={{ whiteSpace: "nowrap" }}>{item.label}</span>
-                  </NavLink>
-                ))}
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {visibleItems.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      end={item.end}
+                      style={({ isActive }) => ({
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        padding: "10px 12px",
+                        borderRadius: 8,
+                        textDecoration: "none",
+                        fontSize: 14,
+                        fontWeight: 500,
+                        color: isActive ? "#fff" : "var(--sidebar-text)",
+                        background: isActive ? "var(--sidebar-active-bg)" : "transparent",
+                        transition: "background 0.15s, color 0.15s",
+                      })}
+                      onMouseEnter={(e) => {
+                        const el = e.currentTarget;
+                        if (el.style.background === "transparent" || el.style.background === "") {
+                          el.style.background = "var(--sidebar-hover-bg)";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        const el = e.currentTarget;
+                        if (!el.classList.contains("active")) {
+                          el.style.background = "transparent";
+                        }
+                      }}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      <item.icon size={19} style={{ flexShrink: 0 }} />
+                      <span style={{ whiteSpace: "nowrap" }}>{item.label}</span>
+                    </NavLink>
+                  ))}
+                </div>
               </div>
             );
           })}
@@ -158,6 +161,7 @@ export default function AppShell() {
           style={{
             padding: "16px",
             minWidth: "var(--sidebar-width)",
+            borderTop: "1px solid var(--sidebar-border)",
           }}
         >
           <button
@@ -167,12 +171,12 @@ export default function AppShell() {
               alignItems: "center",
               gap: 12,
               width: "100%",
-              padding: "10px 16px",
-              borderRadius: 4,
+              padding: "10px 12px",
+              borderRadius: 8,
               border: "none",
               background: "transparent",
               color: "var(--sidebar-text)",
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: 500,
               cursor: "pointer",
               transition: "background 0.15s, color 0.15s",
@@ -186,7 +190,7 @@ export default function AppShell() {
               e.currentTarget.style.color = "var(--sidebar-text)";
             }}
           >
-            <LogOut size={20} />
+            <LogOut size={19} />
             وتل
           </button>
         </div>

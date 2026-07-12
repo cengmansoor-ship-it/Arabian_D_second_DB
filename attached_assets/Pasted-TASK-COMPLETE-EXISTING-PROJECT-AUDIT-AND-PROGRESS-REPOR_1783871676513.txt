@@ -1,0 +1,525 @@
+TASK: COMPLETE EXISTING PROJECT AUDIT AND PROGRESS REPORT
+
+Project name:
+Arabian D Residence Management System
+
+IMPORTANT INSTRUCTION:
+
+Do not add new modules.
+Do not redesign the application.
+Do not delete existing code.
+Do not replace the database.
+Do not change the technology stack.
+Do not perform a large refactor.
+Do not claim that a module is complete only because its page exists.
+
+Your task is to inspect, run, test, and report the exact current state of the
+existing project.
+
+The two attached PDF files are the only authoritative sources of business
+requirements:
+
+1. دپروژي طرحه(2).pdf
+2. د سیستم مهمی ټکی باید چیک سی(1).pdf
+
+Read both PDF files completely, page by page.
+
+The current application must be evaluated against every requirement, table,
+workflow, calculation, report, and note contained in these two PDF files.
+
+The existing UI template and current project code must also be inspected.
+
+==================================================
+1. PROTECT THE EXISTING PROJECT
+==================================================
+
+Before doing anything:
+
+1. Create a safe checkpoint or Git commit of the current working state.
+2. Record the current branch and commit hash.
+3. Do not remove or overwrite existing working functionality.
+4. Do not modify application source code during this audit unless a tiny change
+   is absolutely required only to run diagnostics.
+5. If a diagnostic change is required, document it clearly.
+
+This task is an AUDIT task, not an implementation task.
+
+==================================================
+2. INSPECT THE COMPLETE PROJECT
+==================================================
+
+Inspect:
+
+- All frontend files
+- All backend files
+- Database schema
+- Database migrations
+- Seed data
+- API routes
+- Authentication
+- Environment variables
+- Replit configuration
+- Run commands
+- Build commands
+- Dependencies
+- Assets
+- Template files
+- Tests
+- Git configuration
+
+Identify the actual technology stack.
+
+Report whether the application is:
+
+- Frontend only
+- Backend only
+- Full stack
+- Database connected
+- Using temporary browser/local storage
+- Using mock data
+- Using real persisted database data
+
+==================================================
+3. RUN THE APPLICATION
+==================================================
+
+Run the complete application inside Replit.
+
+Verify:
+
+- Installation succeeds
+- Frontend starts
+- Backend starts
+- Database connects
+- Migrations work
+- Seed process works
+- Login page loads
+- User can log in
+- Welcome page loads
+- Dashboard loads
+- No critical console errors exist
+- No critical server errors exist
+
+Record:
+
+- Exact commands executed
+- Successful commands
+- Failed commands
+- Complete error messages
+- Ports used
+- Required secrets or environment variables
+
+Do not hide or summarize important errors.
+
+==================================================
+4. TEMPLATE USAGE AUDIT
+==================================================
+
+Determine whether the supplied design/template was actually used.
+
+Report:
+
+- Which template files were used
+- Which template components were reused
+- Which pages follow the template
+- Which pages do not follow the template
+- Whether the sidebar, header, forms, tables, cards, typography, colors, spacing,
+  mobile layout, and RTL layout match the template
+
+Do not mark the template as used unless there is file-level and visual evidence.
+
+Give an estimated template-usage percentage and explain the evidence.
+
+==================================================
+5. REQUIREMENTS TRACEABILITY AUDIT
+==================================================
+
+Create a complete requirement checklist.
+
+For every requirement from the two PDFs, record:
+
+- Requirement ID
+- PDF filename
+- PDF page number
+- Requirement description
+- Related module
+- Current implementation evidence
+- Relevant file names
+- Relevant API/database evidence
+- Test performed
+- Current status
+- Problems found
+- Required future work
+
+Use only these statuses:
+
+- COMPLETE
+- PARTIAL
+- UI ONLY
+- BROKEN
+- MISSING
+- NOT TESTED
+- BLOCKED
+- UNRESOLVED
+
+Definitions:
+
+COMPLETE:
+The complete workflow works with real persisted database data.
+
+PARTIAL:
+Some required parts work, but the requirement is not fully implemented.
+
+UI ONLY:
+A page, button, form, or table exists, but the real workflow or database logic
+does not work.
+
+BROKEN:
+The implementation exists but fails during testing.
+
+MISSING:
+No valid implementation exists.
+
+NOT TESTED:
+The implementation may exist but was not successfully tested.
+
+BLOCKED:
+Testing was impossible because of missing configuration, credentials, dependency,
+or infrastructure.
+
+UNRESOLVED:
+The PDF requirement is unclear and should not be guessed.
+
+==================================================
+6. MANDATORY MODULE AUDIT
+==================================================
+
+Audit at minimum:
+
+1. Login
+2. User roles
+3. Password changing
+4. Three incorrect password attempts and account lock
+5. Welcome page
+6. Company settings
+7. Three currencies: AFN, USD, PKR
+8. Projects
+9. Project sections
+10. Blocks
+11. Floors
+12. Houses
+13. Shops
+14. Parking
+15. Mosque
+16. Supermarket and other facilities
+17. Customers
+18. Customer categories
+19. Customer ledgers
+20. Sales
+21. Property availability
+22. Installments
+23. Receipts
+24. Project and sales synchronization
+25. Rental management
+26. Daily journal
+27. Incoming money
+28. Outgoing money
+29. Expenses
+30. Purchasing
+31. Supplier ledgers
+32. Return bills
+33. Employees
+34. Attendance
+35. Employee accounts
+36. Exchange/Sarafi
+37. Partners and shares
+38. Profit and loss
+39. General reports
+40. Date filtering
+41. Search
+42. Printing
+43. Hijri Shamsi and Gregorian dates
+44. Audit logs
+45. Edit and delete/cancellation behavior
+46. Responsive mobile interface
+47. RTL Pashto interface
+48. Data persistence
+49. Dashboard calculations
+50. Security and validation
+
+==================================================
+7. WELCOME PAGE AUDIT
+==================================================
+
+Test the exact required flow:
+
+Login → Welcome Page → Dashboard
+
+Verify:
+
+- Welcome page appears only after successful login
+- It is divided into two visual sections
+- Company name is visible
+- Pashto content is visible
+- English content is visible
+- Approximately three-second timer works
+- Enter key continues to the dashboard
+- Dashboard does not bypass the welcome page
+- Refresh and direct URL behavior are secure
+
+Provide screenshots and relevant file paths.
+
+==================================================
+8. PROJECT DATA AUDIT
+==================================================
+
+Verify the required initial project structure:
+
+SECTION A:
+
+- Blocks A1 through A5
+- Six floors per block
+- Four houses per floor
+- Expected total: 120 houses
+
+SECTION B:
+
+- Blocks B1 through B5
+- Six floors per block
+- Five houses per floor
+- Expected total: 150 houses
+
+Expected complete totals:
+
+- 10 blocks
+- 60 floors
+- 270 houses
+
+Verify these totals directly from the database.
+
+Also verify:
+
+- Blocks can be added
+- Floors can be added
+- Houses can be added
+- Shops and facilities can be added
+- Duplicate identifiers are prevented
+- Property status is stored correctly
+
+Do not use dashboard labels as evidence.
+Use database records and queries as evidence.
+
+==================================================
+9. FINANCIAL AND SALES AUDIT
+==================================================
+
+Test whether:
+
+- A real customer can be created
+- A property can be selected from available properties
+- A sale can be registered
+- A sold property becomes unavailable
+- The same property cannot be sold twice
+- First receipt can be registered
+- Second and third installments can be registered
+- Remaining balance is calculated correctly
+- Receipt appears in customer ledger
+- Receipt appears in the daily journal
+- Sale totals match ledger totals
+- AFN, USD, and PKR remain separate
+- Refresh does not remove data
+
+Use test records only.
+
+After testing, remove test records safely if removal does not damage audit
+integrity.
+
+==================================================
+10. BUTTON AND PAGE FUNCTIONALITY AUDIT
+==================================================
+
+Inspect every visible:
+
+- Navigation item
+- Button
+- Form
+- Search field
+- Filter
+- Add action
+- Edit action
+- Delete or cancel action
+- Print action
+- Export action
+- Modal
+- Dropdown
+- Table action
+
+Create a table containing:
+
+| Page | Element | Expected action | Actual result | Status | Error |
+
+Do not write “working” without actually clicking and testing the element.
+
+==================================================
+11. DATABASE INTEGRITY AUDIT
+==================================================
+
+Inspect:
+
+- Tables/entities
+- Relationships
+- Foreign keys
+- Unique constraints
+- Required fields
+- Currency fields
+- Audit fields
+- Timestamps
+- Sale-property relationship
+- Receipt-sale relationship
+- Ledger-transaction relationship
+- Journal-source relationship
+- Customer relationships
+- Employee relationships
+- Partner relationships
+
+Identify:
+
+- Missing constraints
+- Duplicate risks
+- Orphan-record risks
+- Unsafe deletion behavior
+- Incorrect totals
+- Mixed-currency calculations
+- Mock data
+- Local storage usage
+- Non-persistent data
+
+==================================================
+12. SECURITY AUDIT
+==================================================
+
+Check:
+
+- Password storage
+- Authentication sessions
+- Authorization
+- Role protection
+- Failed-login handling
+- Account lock
+- Input validation
+- Direct URL access
+- API authorization
+- Secret management
+- Sensitive data exposure
+- Unsafe database access
+- Error-message leakage
+
+Do not expose passwords, tokens, or secret values in the report.
+
+==================================================
+13. CREATE AUDIT REPORT FILES
+==================================================
+
+Create these files inside:
+
+docs/audit/
+
+Required files:
+
+1. CURRENT_PROJECT_SUMMARY.md
+2. REQUIREMENTS_TRACEABILITY.md
+3. MODULE_PROGRESS_REPORT.md
+4. TEMPLATE_USAGE_REPORT.md
+5. DATABASE_AUDIT.md
+6. FUNCTIONAL_TEST_REPORT.md
+7. BUTTONS_AND_PAGES_TEST.md
+8. SECURITY_AUDIT.md
+9. BUILD_AND_RUN_REPORT.md
+10. ERRORS_AND_BLOCKERS.md
+11. REMAINING_WORK.md
+12. RECOMMENDED_PHASE_PLAN.md
+
+==================================================
+14. PROGRESS PERCENTAGE
+==================================================
+
+Calculate progress based on verified working requirements, not on the number of
+files or pages.
+
+Provide separate percentages for:
+
+- UI completion
+- Backend completion
+- Database completion
+- Functional workflow completion
+- Requirements completion
+- Testing completion
+- Security completion
+- Overall verified completion
+
+A decorative page without working logic must not count as fully complete.
+
+Explain the calculation method.
+
+==================================================
+15. REMAINING WORK PLAN
+==================================================
+
+Group remaining work into safe implementation phases.
+
+For every future phase include:
+
+- Phase name
+- Requirements included
+- Existing problems to repair
+- Database changes
+- Pages and workflows
+- Tests required
+- Acceptance criteria
+- Dependencies
+- Estimated complexity: Low, Medium, High
+
+Do not implement these phases during this task.
+
+==================================================
+16. FINAL RESPONSE FORMAT
+==================================================
+
+At the end, provide:
+
+1. Actual technology stack
+2. Current application run status
+3. Database type and connection status
+4. Whether data is persistent
+5. Template usage percentage
+6. UI completion percentage
+7. Backend completion percentage
+8. Database completion percentage
+9. Functional completion percentage
+10. Requirements completion percentage
+11. Testing completion percentage
+12. Security completion percentage
+13. Overall verified completion percentage
+14. Number of COMPLETE requirements
+15. Number of PARTIAL requirements
+16. Number of UI ONLY requirements
+17. Number of BROKEN requirements
+18. Number of MISSING requirements
+19. Number of NOT TESTED requirements
+20. Number of BLOCKED requirements
+21. Number of UNRESOLVED requirements
+22. Top 20 critical problems
+23. Files created under docs/audit/
+24. Exact commands executed
+25. Tests passed
+26. Tests failed
+27. Confirmation that no new feature module was implemented
+28. Current Git branch and checkpoint/commit hash
+
+IMPORTANT:
+
+Do not start implementation of remaining features.
+Do not spend time redesigning the project.
+Do not claim unsupported completion.
+Do not hide failures.
+Stop after the complete audit and progress report.
