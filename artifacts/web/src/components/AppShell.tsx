@@ -3,7 +3,8 @@ import { NavLink, Outlet } from "react-router-dom";
 import {
   LayoutDashboard, Settings, Users, ShieldCheck, ScrollText,
   LogOut, Building2, Layers, Tags, BookText, Wallet, Contact,
-  Menu, ChevronRight, Search, Bell, MessageSquare, ChevronDown, ReceiptText
+  Menu, ChevronRight, Search, Bell, MessageSquare, ChevronDown, ReceiptText,
+  KeyRound, Receipt, ShoppingCart
 } from "lucide-react";
 import { useAuth } from "../lib/auth";
 
@@ -16,6 +17,9 @@ const navGroups = [
       { to: "/unit-types", label: "د واحدونو ډولونه", icon: Tags, end: false },
       { to: "/parties", label: "اشخاص / پیرودونکي", icon: Contact, end: false },
       { to: "/sales", label: "پلورنې", icon: ReceiptText, end: false },
+      { to: "/rentals", label: "کرایې", icon: KeyRound, end: false },
+      { to: "/purchases", label: "پیرودنې", icon: ShoppingCart, end: false },
+      { to: "/expenses", label: "لګښتونه", icon: Receipt, end: false },
     ],
   },
   {

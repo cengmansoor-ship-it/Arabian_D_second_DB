@@ -12,6 +12,9 @@ import journalRouter from "./journal";
 import cashAccountsRouter from "./cash-accounts";
 import partiesRouter from "./parties";
 import salesRouter from "./sales";
+import rentalsRouter from "./rentals";
+import expensesRouter from "./expenses";
+import purchasesRouter from "./purchases";
 
 const router: IRouter = Router();
 
@@ -28,5 +31,8 @@ router.use("/journal", journalRouter);
 router.use("/cash-accounts", cashAccountsRouter);
 router.use("/parties", partiesRouter);
 router.use("/sales", salesRouter);
+router.use("/rentals", rentalsRouter);
+router.use("/expenses", expensesRouter);
+router.use("/purchases", purchasesRouter);
 
 export default router;

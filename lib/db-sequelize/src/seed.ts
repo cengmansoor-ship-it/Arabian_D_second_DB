@@ -76,6 +76,7 @@ const CORE_PERMISSIONS = [
   "hr.manage",
   "reports.view",
   "parties.manage",
+  "expenses.manage",
 ];
 
 const CORE_UNIT_TYPES = [
@@ -96,7 +97,10 @@ const CORE_DOCUMENT_SEQUENCES = [
   { documentType: "sales_contract", prefix: "SC-" },
   { documentType: "rental_contract", prefix: "RC-" },
   { documentType: "receipt", prefix: "RCPT-" },
+  { documentType: "rental_receipt", prefix: "RRCPT-" },
   { documentType: "purchase_invoice", prefix: "PINV-" },
+  { documentType: "purchase_payment", prefix: "PPAY-" },
+  { documentType: "purchase_return", prefix: "PRET-" },
   { documentType: "expense_voucher", prefix: "EXP-" },
   { documentType: "journal_entry", prefix: "JE-" },
 ];
@@ -145,6 +149,7 @@ export async function ensureDatabaseReady(): Promise<void> {
     { code: "1000", name: "Cash on Hand", type: "asset" },
     { code: "1100", name: "Accounts Receivable", type: "asset" },
     { code: "2000", name: "Accounts Payable", type: "liability" },
+    { code: "2100", name: "Tenant Deposits Payable", type: "liability" },
     { code: "3000", name: "Owner's Equity", type: "equity" },
     { code: "4000", name: "Sales Revenue", type: "income" },
     { code: "4100", name: "Rental Revenue", type: "income" },

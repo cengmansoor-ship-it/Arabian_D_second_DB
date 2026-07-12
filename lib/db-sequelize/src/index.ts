@@ -5,4 +5,7 @@ export * from "./seed";
 export * from "./posting";
 export * from "./numbering";
 export * from "./sales-service";
+export * from "./rental-service";
+export * from "./expense-service";
+export * from "./purchase-service";
 export * from "./migrations/runner";
