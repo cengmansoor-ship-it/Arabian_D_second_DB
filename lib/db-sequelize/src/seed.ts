@@ -1,7 +1,68 @@
 import { sequelize } from "./connection";
-import { User, Role, Permission, CompanySetting, Currency, DocumentSequence, UnitType, Account, CashAccount } from "./models";
+import { User, Role, Permission, CompanySetting, Currency, DocumentSequence, UnitType, Account, CashAccount, Project, Block, Floor, Unit } from "./models";
 import { hashPassword } from "./auth";
 import { runMigrations } from "./migrations";
+
+/**
+ * Required baseline residential structure (idempotent):
+ * Section A: blocks A1-A5, 6 floors each, 4 houses per floor -> 120 houses
+ * Section B: blocks B1-B5, 6 floors each, 5 houses per floor -> 150 houses
+ * Total: 10 blocks, 60 floors, 270 houses.
+ */
+async function seedResidentialStructure(): Promise<void> {
+  // Reuse an existing project named "Arabian D Residence" if one already exists (e.g. created
+  // manually before this seed existed) instead of creating a second, duplicate project.
+  let project = await Project.findOne({ where: { name: "Arabian D Residence" } });
+  if (!project) {
+    project = await Project.create({
+      name: "Arabian D Residence",
+      code: "ARD-MAIN",
+      status: "active",
+      description: "Main residential complex — Sections A and B",
+    });
+  }
+
+  const apartmentType = await UnitType.findOne({ where: { name: "Apartment" } });
+  if (!apartmentType) return; // core unit types seed runs earlier in ensureDatabaseReady; should never happen
+
+  const sections: { prefix: "A" | "B"; count: number; floorsPerBlock: number; unitsPerFloor: number }[] = [
+    { prefix: "A", count: 5, floorsPerBlock: 6, unitsPerFloor: 4 },
+    { prefix: "B", count: 5, floorsPerBlock: 6, unitsPerFloor: 5 },
+  ];
+
+  let blockOrder = 0;
+  for (const section of sections) {
+    for (let b = 1; b <= section.count; b++) {
+      const blockCode = `${section.prefix}${b}`;
+      blockOrder += 1;
+      const [block] = await Block.findOrCreate({
+        where: { projectId: project.id, code: blockCode },
+        defaults: { projectId: project.id, code: blockCode, name: `Block ${blockCode}`, order: blockOrder },
+      });
+
+      for (let f = 1; f <= section.floorsPerBlock; f++) {
+        const [floor] = await Floor.findOrCreate({
+          where: { blockId: block.id, levelNumber: f },
+          defaults: { blockId: block.id, levelNumber: f, name: `Floor ${f}`, floorType: "residential", order: f },
+        });
+
+        for (let u = 1; u <= section.unitsPerFloor; u++) {
+          const unitNumber = `${blockCode}-${f}${String(u).padStart(2, "0")}`;
+          await Unit.findOrCreate({
+            where: { floorId: floor.id, unitNumber },
+            defaults: {
+              floorId: floor.id,
+              unitTypeId: apartmentType.id,
+              unitNumber,
+              status: "available",
+              purpose: "for_sale",
+            },
+          });
+        }
+      }
+    }
+  }
+}
 
 const CORE_PERMISSIONS = [
   "users.manage",
@@ -130,4 +191,6 @@ export async function ensureDatabaseReady(): Promise<void> {
     });
     await admin.addRole(adminRole);
   }
+
+  await seedResidentialStructure();
 }
