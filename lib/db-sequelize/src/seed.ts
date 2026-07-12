@@ -77,6 +77,8 @@ const CORE_PERMISSIONS = [
   "reports.view",
   "parties.manage",
   "expenses.manage",
+  "exchange.manage",
+  "partners.manage",
 ];
 
 const CORE_UNIT_TYPES = [
@@ -103,6 +105,11 @@ const CORE_DOCUMENT_SEQUENCES = [
   { documentType: "purchase_return", prefix: "PRET-" },
   { documentType: "expense_voucher", prefix: "EXP-" },
   { documentType: "journal_entry", prefix: "JE-" },
+  { documentType: "employee", prefix: "EMP-" },
+  { documentType: "employee_payment", prefix: "EPAY-" },
+  { documentType: "exchange", prefix: "EXC-" },
+  { documentType: "partner", prefix: "PTR-" },
+  { documentType: "partner_transaction", prefix: "PTX-" },
 ];
 
 /**
@@ -154,6 +161,9 @@ export async function ensureDatabaseReady(): Promise<void> {
     { code: "4000", name: "Sales Revenue", type: "income" },
     { code: "4100", name: "Rental Revenue", type: "income" },
     { code: "5000", name: "General Expenses", type: "expense" },
+    { code: "5100", name: "Salaries & Wages Expense", type: "expense" },
+    { code: "5200", name: "Exchange Fees Expense", type: "expense" },
+    { code: "3100", name: "Exchange Clearing", type: "asset" },
   ];
   for (const acc of coreAccounts) {
     await Account.findOrCreate({ where: { code: acc.code }, defaults: { ...acc, isSystem: true, isActive: true } });

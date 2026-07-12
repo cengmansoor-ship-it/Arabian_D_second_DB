@@ -8,4 +8,8 @@ export * from "./sales-service";
 export * from "./rental-service";
 export * from "./expense-service";
 export * from "./purchase-service";
+export * from "./employee-service";
+export * from "./exchange-service";
+export * from "./partner-service";
+export * from "./reports-service";
 export * from "./migrations/runner";

@@ -22,6 +22,12 @@ import RentalDetailPage from "./pages/RentalDetailPage";
 import ExpensesPage from "./pages/ExpensesPage";
 import PurchasesPage from "./pages/PurchasesPage";
 import PurchaseDetailPage from "./pages/PurchaseDetailPage";
+import EmployeesPage from "./pages/EmployeesPage";
+import EmployeeDetailPage from "./pages/EmployeeDetailPage";
+import ExchangePage from "./pages/ExchangePage";
+import PartnersPage from "./pages/PartnersPage";
+import PartnerDetailPage from "./pages/PartnerDetailPage";
+import ProfitLossPage from "./pages/ProfitLossPage";
 
 function Protected({ children }: { children: React.ReactNode }) {
   const { user, loading, justLoggedIn } = useAuth();
@@ -81,6 +87,12 @@ export default function App() {
           <Route path="expenses" element={<ExpensesPage />} />
           <Route path="purchases" element={<PurchasesPage />} />
           <Route path="purchases/:id" element={<PurchaseDetailPage />} />
+          <Route path="employees" element={<EmployeesPage />} />
+          <Route path="employees/:id" element={<EmployeeDetailPage />} />
+          <Route path="exchange" element={<ExchangePage />} />
+          <Route path="partners" element={<PartnersPage />} />
+          <Route path="partners/:id" element={<PartnerDetailPage />} />
+          <Route path="reports/profit-loss" element={<ProfitLossPage />} />
           <Route
             path="journal"
             element={

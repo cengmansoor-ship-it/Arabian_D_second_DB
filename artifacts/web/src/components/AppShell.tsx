@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Settings, Users, ShieldCheck, ScrollText,
   LogOut, Building2, Layers, Tags, BookText, Wallet, Contact,
   Menu, ChevronRight, Search, Bell, MessageSquare, ChevronDown, ReceiptText,
-  KeyRound, Receipt, ShoppingCart
+  KeyRound, Receipt, ShoppingCart, UserRound, ArrowLeftRight, Handshake, TrendingUp
 } from "lucide-react";
 import { useAuth } from "../lib/auth";
 
@@ -20,12 +20,16 @@ const navGroups = [
       { to: "/rentals", label: "کرایې", icon: KeyRound, end: false },
       { to: "/purchases", label: "پیرودنې", icon: ShoppingCart, end: false },
       { to: "/expenses", label: "لګښتونه", icon: Receipt, end: false },
+      { to: "/employees", label: "کارکوونکي", icon: UserRound, end: false },
+      { to: "/exchange", label: "صرافي", icon: ArrowLeftRight, end: false },
+      { to: "/partners", label: "شریکان", icon: Handshake, end: false },
     ],
   },
   {
     label: "مالیه",
-    adminOnly: true,
+    adminOnly: false,
     items: [
+      { to: "/reports/profit-loss", label: "ګټه او تاوان", icon: TrendingUp, end: false },
       { to: "/journal", label: "د لیدلوري ژورنال", icon: BookText, end: false, adminOnly: true },
       { to: "/cash-accounts", label: "د کیش حسابونه", icon: Wallet, end: false, adminOnly: true },
     ],

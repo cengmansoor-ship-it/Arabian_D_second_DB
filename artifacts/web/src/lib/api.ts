@@ -413,3 +413,125 @@ export interface PurchaseReturn {
   reason: string;
   createdAt: string;
 }
+
+export type EmployeeWageType = "daily" | "monthly";
+export type EmployeeStatus = "active" | "inactive";
+
+export interface Employee {
+  id: number;
+  employeeNumber: string;
+  name: string;
+  fatherName: string | null;
+  phone: string | null;
+  position: string;
+  wageType: EmployeeWageType;
+  wageAmount: string;
+  currencyCode: string;
+  startDate: string;
+  status: EmployeeStatus;
+  notes: string | null;
+  createdAt: string;
+  balance?: string;
+  attendances?: Attendance[];
+  payments?: EmployeePayment[];
+}
+
+export type AttendanceStatus = "present" | "absent" | "leave" | "half_day";
+
+export interface Attendance {
+  id: number;
+  employeeId: number;
+  date: string;
+  status: AttendanceStatus;
+  payableAmount: string;
+  currencyCode: string;
+  notes: string | null;
+  createdAt: string;
+}
+
+export type EmployeePaymentType = "salary" | "advance";
+
+export interface EmployeePayment {
+  id: number;
+  paymentNumber: string;
+  employeeId: number;
+  paymentDate: string;
+  type: EmployeePaymentType;
+  amount: string;
+  previousBalance: string | null;
+  newBalance: string | null;
+  currencyCode: string;
+  method: string;
+  note: string | null;
+  voidedAt: string | null;
+  createdAt: string;
+}
+
+export interface ExchangeTransaction {
+  id: number;
+  exchangeNumber: string;
+  partyId: number;
+  exchangeDate: string;
+  currencyGiven: string;
+  amountGiven: string;
+  currencyReceived: string;
+  amountReceived: string;
+  rate: string;
+  fee: string;
+  reference: string | null;
+  notes: string | null;
+  createdAt: string;
+  party?: Party;
+}
+
+export type PartnerStatus = "active" | "inactive";
+
+export interface Partner {
+  id: number;
+  partnerNumber: string;
+  partyId: number;
+  initialInvestment: string;
+  currencyCode: string;
+  ownershipPercent: string | null;
+  joinDate: string;
+  status: PartnerStatus;
+  notes: string | null;
+  createdAt: string;
+  balance?: string;
+  party?: Party;
+  transactions?: PartnerTransaction[];
+}
+
+export type PartnerTransactionType = "investment" | "withdrawal";
+
+export interface PartnerTransaction {
+  id: number;
+  transactionNumber: string;
+  partnerId: number;
+  transactionDate: string;
+  type: PartnerTransactionType;
+  amount: string;
+  previousBalance: string | null;
+  newBalance: string | null;
+  currencyCode: string;
+  note: string | null;
+  createdAt: string;
+}
+
+export interface ProfitLossReport {
+  currencyCode: string;
+  startDate: string;
+  endDate: string;
+  propertySaleIncome: string;
+  rentalIncome: string;
+  otherIncome: string;
+  totalIncome: string;
+  purchases: string;
+  expenses: string;
+  employeeCosts: string;
+  totalOutflow: string;
+  partnerWithdrawals: string;
+  availableBalance: string;
+  profit: string;
+  loss: string;
+}
