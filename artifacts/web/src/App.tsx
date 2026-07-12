@@ -28,6 +28,7 @@ import ExchangePage from "./pages/ExchangePage";
 import PartnersPage from "./pages/PartnersPage";
 import PartnerDetailPage from "./pages/PartnerDetailPage";
 import ProfitLossPage from "./pages/ProfitLossPage";
+import GeneralReportPage from "./pages/GeneralReportPage";
 
 function Protected({ children }: { children: React.ReactNode }) {
   const { user, loading, justLoggedIn } = useAuth();
@@ -93,6 +94,7 @@ export default function App() {
           <Route path="partners" element={<PartnersPage />} />
           <Route path="partners/:id" element={<PartnerDetailPage />} />
           <Route path="reports/profit-loss" element={<ProfitLossPage />} />
+          <Route path="reports/general" element={<GeneralReportPage />} />
           <Route
             path="journal"
             element={

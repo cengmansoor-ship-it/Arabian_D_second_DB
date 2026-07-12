@@ -61,6 +61,69 @@ export interface CompanySettings {
   baseCurrencyCode: string;
   fiscalYearStartMonth: number;
   locale: string;
+  logoUrl: string | null;
+  address: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  email: string | null;
+  website: string | null;
+}
+
+export interface DashboardSummary {
+  totalBlocks: number;
+  totalFloors: number;
+  totalProperties: number;
+  unitsByStatus: Record<string, number>;
+  totalCustomers: number;
+  salesTotalsByCurrency: Record<string, string>;
+  receivedTotalsByCurrency: Record<string, string>;
+  outstandingTotalsByCurrency: Record<string, string>;
+  todayIncomingByCurrency: Record<string, string>;
+  todayOutgoingByCurrency: Record<string, string>;
+  activeRentals: number;
+  attendanceToday: { present: number; absent: number; halfDay: number; leave: number; notRecorded: number; totalEmployees: number };
+  companyReceivablesByCurrency: Record<string, string>;
+  companyPayablesByCurrency: Record<string, string>;
+  recentTransactions: Array<{ id: number; date: string; memo: string | null; isManual: boolean }>;
+  alerts: string[];
+}
+
+export interface GeneralReportRow {
+  date: string;
+  reference: string;
+  party: string | null;
+  moneyReceived: string;
+  moneyPaid: string;
+  owedToCompany: string;
+  owedByCompany: string;
+  note: string | null;
+}
+
+export interface ProjectStructureRow {
+  projectId: number;
+  projectName: string;
+  blocks: number;
+  floors: number;
+  totalProperties: number;
+  available: number;
+  reserved: number;
+  sold: number;
+  rented: number;
+  unavailable: number;
+}
+
+export interface GeneralReport {
+  currencyCode: string;
+  startDate: string;
+  endDate: string;
+  purchasing: GeneralReportRow[];
+  expenses: GeneralReportRow[];
+  customers: GeneralReportRow[];
+  exchange: GeneralReportRow[];
+  propertySales: GeneralReportRow[];
+  rentals: GeneralReportRow[];
+  employees: GeneralReportRow[];
+  projects: ProjectStructureRow[];
 }
 
 export interface Currency {

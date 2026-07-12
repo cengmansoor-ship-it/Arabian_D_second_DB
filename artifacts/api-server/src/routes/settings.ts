@@ -12,7 +12,7 @@ router.get("/", requireAuth, async (_req, res) => {
 });
 
 router.put("/", requireAuth, requirePermission("settings.manage"), async (req: AuthedRequest, res) => {
-  const { companyName, baseCurrencyCode, fiscalYearStartMonth, locale } = req.body ?? {};
+  const { companyName, baseCurrencyCode, fiscalYearStartMonth, locale, logoUrl, address, phone, whatsapp, email, website } = req.body ?? {};
   const settings = await CompanySetting.findByPk(1);
   if (!settings) {
     res.status(404).json({ error: "Company settings not found" });
@@ -24,6 +24,12 @@ router.put("/", requireAuth, requirePermission("settings.manage"), async (req: A
     settings.fiscalYearStartMonth = fiscalYearStartMonth;
   }
   if (typeof locale === "string" && locale.trim()) settings.locale = locale.trim();
+  if (typeof logoUrl === "string" || logoUrl === null) settings.logoUrl = logoUrl;
+  if (typeof address === "string" || address === null) settings.address = address;
+  if (typeof phone === "string" || phone === null) settings.phone = phone;
+  if (typeof whatsapp === "string" || whatsapp === null) settings.whatsapp = whatsapp;
+  if (typeof email === "string" || email === null) settings.email = email;
+  if (typeof website === "string" || website === null) settings.website = website;
   await settings.save();
   await recordAudit({
     userId: req.auth!.userId,

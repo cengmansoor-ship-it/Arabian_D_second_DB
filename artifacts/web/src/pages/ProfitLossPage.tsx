@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api, type ProfitLossReport } from "../lib/api";
+import PrintHeader from "../components/PrintHeader";
+import { Printer } from "lucide-react";
 
 function firstOfMonth(): string {
   const d = new Date();
@@ -35,10 +37,18 @@ export default function ProfitLossPage() {
 
   return (
     <div>
-      <p className="page-title" style={{ margin: 0 }}>ګټه او تاوان</p>
-      <p className="page-sub">د شرکت د ګټې او تاوان راپور — د اسعارو له مخې جلا</p>
+      <PrintHeader title="د ګټې او تاوان راپور" rangeLabel={`${startDate} تر ${endDate} — ${currencyCode}`} />
+      <div className="page-header no-print">
+        <div>
+          <p className="page-title" style={{ margin: 0 }}>ګټه او تاوان</p>
+          <p className="page-sub">د شرکت د ګټې او تاوان راپور — د اسعارو له مخې جلا</p>
+        </div>
+        <button className="btn btn-outline" onClick={() => window.print()} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <Printer size={16} /> چاپ
+        </button>
+      </div>
 
-      <div className="card" style={{ padding: 18, margin: "16px 0", display: "flex", gap: 12, alignItems: "end" }}>
+      <div className="card no-print" style={{ padding: 18, margin: "16px 0", display: "flex", gap: 12, alignItems: "end" }}>
         <div>
           <label className="form-label">اسعار</label>
           <select className="form-input" value={currencyCode} onChange={(e) => setCurrencyCode(e.target.value)}>

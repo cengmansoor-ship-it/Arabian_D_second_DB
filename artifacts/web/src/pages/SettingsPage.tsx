@@ -56,6 +56,34 @@ export default function SettingsPage() {
             <label className="form-label">د مالي کال پیل میاشت</label>
             <input className="form-input" type="number" min={1} max={12} disabled={!canManage} value={form.fiscalYearStartMonth ?? 1} onChange={(e) => setForm((f) => ({ ...f, fiscalYearStartMonth: Number(e.target.value) }))} style={{ maxWidth: 120 }} />
           </div>
+          <div>
+            <label className="form-label">د لوگو لینک (URL)</label>
+            <input className="form-input" disabled={!canManage} value={form.logoUrl ?? ""} onChange={(e) => setForm((f) => ({ ...f, logoUrl: e.target.value }))} placeholder="https://..." />
+          </div>
+          <div>
+            <label className="form-label">پته</label>
+            <input className="form-input" disabled={!canManage} value={form.address ?? ""} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div>
+              <label className="form-label">تلیفون</label>
+              <input className="form-input" disabled={!canManage} value={form.phone ?? ""} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
+            </div>
+            <div>
+              <label className="form-label">واټساپ</label>
+              <input className="form-input" disabled={!canManage} value={form.whatsapp ?? ""} onChange={(e) => setForm((f) => ({ ...f, whatsapp: e.target.value }))} />
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div>
+              <label className="form-label">بریښنالیک</label>
+              <input className="form-input" disabled={!canManage} value={form.email ?? ""} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
+            </div>
+            <div>
+              <label className="form-label">ویب پاڼه</label>
+              <input className="form-input" disabled={!canManage} value={form.website ?? ""} onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))} />
+            </div>
+          </div>
           {canManage && (
             <div style={{ display: "flex", alignItems: "center", gap: 12, paddingTop: 4 }}>
               <button className="btn btn-primary" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>

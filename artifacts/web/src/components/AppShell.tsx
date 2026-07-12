@@ -30,6 +30,7 @@ const navGroups = [
     adminOnly: false,
     items: [
       { to: "/reports/profit-loss", label: "ګټه او تاوان", icon: TrendingUp, end: false },
+      { to: "/reports/general", label: "عمومي راپور", icon: BookText, end: false },
       { to: "/journal", label: "د لیدلوري ژورنال", icon: BookText, end: false, adminOnly: true },
       { to: "/cash-accounts", label: "د کیش حسابونه", icon: Wallet, end: false, adminOnly: true },
     ],
@@ -55,6 +56,7 @@ export default function AppShell() {
     <div className="flex h-screen w-full overflow-hidden" style={{ background: "var(--bg)" }}>
       {/* ── Sidebar ───────────────────────────────────────────── */}
       <aside
+        className="no-print"
         style={{
           width: sidebarOpen ? "var(--sidebar-width)" : "0",
           minWidth: sidebarOpen ? "var(--sidebar-width)" : "0",
@@ -209,6 +211,7 @@ export default function AppShell() {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         {/* Topbar */}
         <header
+          className="no-print"
           style={{
             height: "var(--topbar-height)",
             background: "var(--topbar-bg)",

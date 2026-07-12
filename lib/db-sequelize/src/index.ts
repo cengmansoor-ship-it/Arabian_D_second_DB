@@ -12,4 +12,5 @@ export * from "./employee-service";
 export * from "./exchange-service";
 export * from "./partner-service";
 export * from "./reports-service";
+export * from "./jalali";
 export * from "./migrations/runner";

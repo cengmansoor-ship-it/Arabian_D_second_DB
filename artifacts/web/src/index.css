@@ -176,3 +176,13 @@ input, select, button, textarea { font-family: inherit; }
 .page-title { font-size: 26px; font-weight: 700; color: var(--text); margin: 0; }
 .page-breadcrumb { font-size: 14px; font-weight: 500; color: var(--muted); display: flex; gap: 8px; }
 .page-breadcrumb span:last-child { color: var(--primary); }
+
+/* ── Printing ───────────────────────────────────────────────────────── */
+.print-header { display: none; }
+@media print {
+  .no-print, .page-header, button { display: none !important; }
+  .print-header { display: block !important; }
+  body, .card { background: #fff !important; color: #000 !important; box-shadow: none !important; }
+  .fl-table th, .fl-table td { color: #000 !important; padding: 6px 10px; }
+  a { color: #000 !important; }
+}

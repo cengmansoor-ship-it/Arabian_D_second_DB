@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type Party, type PartyLedgerResponse, type PartyType } from "../lib/api";
-import { ArrowRight, Edit2, Save, X } from "lucide-react";
+import { ArrowRight, Edit2, Save, X, Printer } from "lucide-react";
+import PrintHeader from "../components/PrintHeader";
 
 const TYPE_LABELS: Record<PartyType, string> = {
   individual_customer: "انفرادي پیرودونکی", market_customer: "بازار پیرودونکی",
@@ -37,18 +38,26 @@ export default function PartyDetailPage() {
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-        <Link to="/parties" style={{ color: "var(--muted)", fontSize: 13, display: "flex", alignItems: "center", gap: 4, textDecoration: "none" }}>
-          اشخاص <ArrowRight size={13} />
-        </Link>
-        <span style={{ color: "var(--muted)" }}>/</span>
-        <span style={{ fontSize: 13 }}>{party.name}</span>
+      <PrintHeader title={`د حساب کتاب — ${party.name}`} />
+      <div className="no-print">
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+          <Link to="/parties" style={{ color: "var(--muted)", fontSize: 13, display: "flex", alignItems: "center", gap: 4, textDecoration: "none" }}>
+            اشخاص <ArrowRight size={13} />
+          </Link>
+          <span style={{ color: "var(--muted)" }}>/</span>
+          <span style={{ fontSize: 13 }}>{party.name}</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
+            <p className="page-title" style={{ margin: 0 }}>{party.name}</p>
+            <span className="badge badge-muted">{TYPE_LABELS[party.type]}</span>
+          </div>
+          <button className="btn btn-outline" onClick={() => window.print()} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <Printer size={16} /> د لیجر چاپ
+          </button>
+        </div>
+        <p className="page-sub">د شخص معلومات او د حساب کتاب</p>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
-        <p className="page-title" style={{ margin: 0 }}>{party.name}</p>
-        <span className="badge badge-muted">{TYPE_LABELS[party.type]}</span>
-      </div>
-      <p className="page-sub">د شخص معلومات او د حساب کتاب</p>
 
       {showDebtWarning && (
         <div style={{ background: "var(--warning-light)", border: "1px solid #FCD34D", borderRadius: 6, padding: "12px 16px", marginBottom: 20, fontSize: 13, fontWeight: 600, color: "#92400E" }}>
