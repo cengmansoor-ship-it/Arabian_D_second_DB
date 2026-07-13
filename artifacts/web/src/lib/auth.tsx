@@ -7,6 +7,8 @@ interface AuthContextValue {
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   hasRole: (role: string) => boolean;
+  justLoggedIn: boolean;
+  acknowledgeWelcome: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -14,6 +16,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [justLoggedIn, setJustLoggedIn] = useState(false);
 
   useEffect(() => {
     api
@@ -26,6 +29,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function login(username: string, password: string) {
     const loggedInUser = await api.post<CurrentUser>("/auth/login", { username, password });
     setUser(loggedInUser);
+    setJustLoggedIn(true);
+  }
+
+  function acknowledgeWelcome() {
+    setJustLoggedIn(false);
   }
 
   async function logout() {
@@ -38,7 +46,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, hasRole }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, loading, login, logout, hasRole, justLoggedIn, acknowledgeWelcome }}>
+      {children}
+    </AuthContext.Provider>
   );
 }
 

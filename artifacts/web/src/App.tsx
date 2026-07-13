@@ -1,7 +1,8 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./lib/auth";
 import AppShell from "./components/AppShell";
 import LoginPage from "./pages/LoginPage";
+import WelcomePage from "./pages/WelcomePage";
 import DashboardPage from "./pages/DashboardPage";
 import SettingsPage from "./pages/SettingsPage";
 import UsersPage from "./pages/UsersPage";
@@ -14,14 +15,32 @@ import JournalPage from "./pages/JournalPage";
 import CashAccountsPage from "./pages/CashAccountsPage";
 import PartiesPage from "./pages/PartiesPage";
 import PartyDetailPage from "./pages/PartyDetailPage";
+import SalesPage from "./pages/SalesPage";
+import SaleDetailPage from "./pages/SaleDetailPage";
+import RentalsPage from "./pages/RentalsPage";
+import RentalDetailPage from "./pages/RentalDetailPage";
+import ExpensesPage from "./pages/ExpensesPage";
+import PurchasesPage from "./pages/PurchasesPage";
+import PurchaseDetailPage from "./pages/PurchaseDetailPage";
+import EmployeesPage from "./pages/EmployeesPage";
+import EmployeeDetailPage from "./pages/EmployeeDetailPage";
+import ExchangePage from "./pages/ExchangePage";
+import PartnersPage from "./pages/PartnersPage";
+import PartnerDetailPage from "./pages/PartnerDetailPage";
+import ProfitLossPage from "./pages/ProfitLossPage";
+import GeneralReportPage from "./pages/GeneralReportPage";
 
 function Protected({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, justLoggedIn } = useAuth();
+  const location = useLocation();
   if (loading) {
     return <div className="flex h-screen items-center justify-center text-gray-500">... بارېدل</div>;
   }
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+  if (justLoggedIn && location.pathname !== "/welcome") {
+    return <Navigate to="/welcome" replace />;
   }
   return <>{children}</>;
 }
@@ -40,6 +59,14 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route
+          path="/welcome"
+          element={
+            <Protected>
+              <WelcomePage />
+            </Protected>
+          }
+        />
+        <Route
           path="/"
           element={
             <Protected>
@@ -54,6 +81,20 @@ export default function App() {
           <Route path="unit-types" element={<UnitTypesPage />} />
           <Route path="parties" element={<PartiesPage />} />
           <Route path="parties/:id" element={<PartyDetailPage />} />
+          <Route path="sales" element={<SalesPage />} />
+          <Route path="sales/:id" element={<SaleDetailPage />} />
+          <Route path="rentals" element={<RentalsPage />} />
+          <Route path="rentals/:id" element={<RentalDetailPage />} />
+          <Route path="expenses" element={<ExpensesPage />} />
+          <Route path="purchases" element={<PurchasesPage />} />
+          <Route path="purchases/:id" element={<PurchaseDetailPage />} />
+          <Route path="employees" element={<EmployeesPage />} />
+          <Route path="employees/:id" element={<EmployeeDetailPage />} />
+          <Route path="exchange" element={<ExchangePage />} />
+          <Route path="partners" element={<PartnersPage />} />
+          <Route path="partners/:id" element={<PartnerDetailPage />} />
+          <Route path="reports/profit-loss" element={<ProfitLossPage />} />
+          <Route path="reports/general" element={<GeneralReportPage />} />
           <Route
             path="journal"
             element={

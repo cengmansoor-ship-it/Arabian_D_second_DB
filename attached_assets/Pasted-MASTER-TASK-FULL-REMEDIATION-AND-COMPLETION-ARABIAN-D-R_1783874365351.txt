@@ -1,0 +1,1421 @@
+MASTER TASK — FULL REMEDIATION AND COMPLETION
+ARABIAN D RESIDENCE MANAGEMENT SYSTEM
+
+You are working inside the EXISTING Arabian D Residence Management System.
+
+Do not create a new application.
+Do not discard the current repository.
+Do not replace the current technology stack.
+Do not delete existing working modules.
+Do not restart from a generic template.
+Do not stop after planning or auditing.
+
+Your mission is to repair, complete, test, secure, and document the entire
+existing application in this single continuous task.
+
+Internally divide the work into safe phases and create Git checkpoints, but do
+not wait for another prompt between phases unless you are blocked by a missing
+secret, unavailable external service, or a potentially destructive action that
+cannot be performed safely.
+
+==================================================
+A. AUTHORITATIVE REQUIREMENTS
+==================================================
+
+The following two uploaded PDF files are the ONLY authoritative sources of
+business requirements:
+
+1. دپروژي طرحه(2).pdf
+2. د سیستم مهمی ټکی باید چیک سی(1).pdf
+
+Read both PDFs completely, page by page, including all tables, notes,
+calculations, diagrams, examples, workflows, receipt structures, report
+requirements, and color indications.
+
+Also read all existing audit documents under:
+
+docs/audit/
+
+Especially:
+
+- CURRENT_PROJECT_SUMMARY.md
+- REQUIREMENTS_TRACEABILITY.md
+- MODULE_PROGRESS_REPORT.md
+- TEMPLATE_USAGE_REPORT.md
+- DATABASE_AUDIT.md
+- FUNCTIONAL_TEST_REPORT.md
+- BUTTONS_AND_PAGES_TEST.md
+- SECURITY_AUDIT.md
+- BUILD_AND_RUN_REPORT.md
+- ERRORS_AND_BLOCKERS.md
+- REMAINING_WORK.md
+- RECOMMENDED_PHASE_PLAN.md
+
+Use the PDFs for business requirements and the audit documents for the verified
+current project state.
+
+Do not invent accounting, exchange, ownership, or financial rules where the PDFs
+are genuinely unclear. Mark only genuinely unclear items as UNRESOLVED.
+
+==================================================
+B. VERIFIED CURRENT BASELINE
+==================================================
+
+The existing audited stack is:
+
+- pnpm workspaces monorepo
+- Node.js 24
+- TypeScript 5.9
+- Express 5.2.1 backend
+- Sequelize 6.37 ORM
+- React 19
+- Vite
+- TanStack Query
+- Tailwind CSS v4
+- JWT authentication using httpOnly cookies
+- bcryptjs password hashing
+- decimal.js
+- DECIMAL(20,4) financial fields
+- SQLite database:
+  artifacts/api-server/data/arabian-d.sqlite
+- Backend port: 8080
+- Frontend port: 5000
+
+Keep this stack.
+
+Do not migrate to Flutter, NestJS, PostgreSQL, MySQL, Firebase, Supabase, or
+another framework or database during this task.
+
+The audit found approximately:
+
+- UI completion: 20%
+- Backend completion: 28%
+- Database schema completion: 35%
+- Functional completion: 20%
+- Strict requirements completion: 21/222
+- Automated testing: 0%
+- Overall verified completion: approximately 20%
+
+Known critical failures include:
+
+1. Sale creation returns HTTP 500 because of a nested transaction problem
+2. Required 10-block, 60-floor, 270-house project structure is missing
+3. No three-attempt account lock
+4. No required Welcome page
+5. Create Role button is broken
+6. Raw stack traces leak through API errors
+7. No proper printing or export
+8. No Hijri Shamsi/Jalali dates
+9. Rentals missing
+10. Expenses missing
+11. Purchasing missing
+12. Supplier ledgers missing
+13. Return bills missing
+14. Employees and attendance missing
+15. Exchange/Sarafi missing
+16. Partners and profit/loss missing
+17. General reports missing
+18. Dedicated facilities management incomplete
+19. No CSRF protection
+20. No rate limiting
+21. No automated test suite
+22. No backup and restoration procedure
+
+All of these must be addressed in this task.
+
+==================================================
+C. SAFETY, GIT, AND DATA PROTECTION
+==================================================
+
+Before modifying application code:
+
+1. Run:
+
+git status
+git branch --show-current
+git log --oneline --decorate -10
+git diff
+git diff --staged
+
+2. Preserve all existing uncommitted visual changes to the login page, sidebar,
+   and dashboard.
+
+3. Do not silently discard, reset, checkout over, or overwrite those changes.
+
+4. Create a safety branch:
+
+replit/full-system-completion
+
+5. Create a pre-completion checkpoint commit containing the intended existing
+   source changes.
+
+Do not commit:
+
+- .env files
+- secrets
+- access tokens
+- node_modules
+- logs
+- temporary scripts
+- database lock files
+
+Before changing the database:
+
+- Make a timestamped backup of:
+  artifacts/api-server/data/arabian-d.sqlite
+- Store the backup outside tracked source files or in a gitignored backups
+  directory.
+- Verify that the backup file can be opened.
+
+Do not use destructive schema reset commands against the existing database.
+
+Use Sequelize migrations and seeders.
+
+Do not push to GitHub.
+
+==================================================
+D. ARCHITECTURE AND IMPLEMENTATION RULES
+==================================================
+
+Continue using the existing monorepo and modules.
+
+Use:
+
+- Express services and controllers
+- Sequelize models and migrations
+- React pages and reusable components
+- TanStack Query for API state
+- Tailwind v4 for styling
+- decimal.js for all arithmetic involving money
+- DECIMAL(20,4) database fields
+- Real database persistence
+
+Never use:
+
+- Mock totals presented as real totals
+- localStorage as a financial database
+- Hard-coded dashboard statistics
+- Floating-point JavaScript arithmetic for money
+- Plain-text passwords
+- Client-side-only authorization
+- Unsafe permanent deletion of posted financial records
+
+All important business operations must run through backend authorization and
+database transactions.
+
+==================================================
+E. TEMPLATE AND USER INTERFACE
+==================================================
+
+The original reference template is Flutter and cannot be reused literally inside
+the React application.
+
+Do not claim literal template reuse.
+
+Instead:
+
+1. Inspect the supplied Flutter template completely.
+2. Extract its visual design system:
+   - Sidebar structure
+   - Header structure
+   - Dashboard cards
+   - Form layout
+   - Table styling
+   - Typography
+   - Spacing
+   - Border radius
+   - Icon placement
+   - Responsive behavior
+   - Light/dark visual hierarchy where applicable
+3. Reproduce the same professional visual language in React.
+4. Preserve full Pashto RTL behavior.
+5. Make all screens responsive on:
+   - Desktop
+   - Tablet
+   - Mobile
+6. Ensure text is readable and not visually corrupted.
+7. Do not create decorative buttons that have no working action.
+8. Create loading, empty, success, validation, and error states.
+9. Ensure every visible navigation item points to a working page or is clearly
+   marked unavailable during implementation; by final completion, all required
+   modules must work.
+
+Create:
+
+docs/completion/TEMPLATE_VISUAL_MAPPING.md
+
+Document the Flutter reference components and their React equivalents.
+
+==================================================
+F. FOUNDATION, AUTHENTICATION, AND SECURITY
+==================================================
+
+Complete and verify:
+
+1. Login page
+2. Username field with user icon
+3. Password field with lock icon
+4. Password show/hide
+5. Secure logout
+6. Password changing
+7. User activation/deactivation
+8. Administrator and Standard User roles
+9. Permission-based backend authorization
+10. User management
+11. Role management
+12. Working Create Role function
+13. Permission assignment
+14. Protected API routes
+15. Protected frontend routes
+
+Account lock requirements:
+
+- Count consecutive failed logins
+- Lock account immediately after the third incorrect password attempt
+- Store failed-attempt count
+- Store lock time
+- Reject further login attempts while locked
+- Allow an authorized administrator to unlock the account
+- Reset failed attempts after successful login
+- Record all events in the audit log
+
+Security hardening:
+
+- Keep passwords hashed with bcrypt
+- Never return password hashes
+- Add login rate limiting
+- Add API rate limiting
+- Protect state-changing cookie-authenticated requests against CSRF
+- Use appropriate SameSite cookie settings
+- Use secure cookies in production
+- Validate request bodies, route parameters, and query parameters
+- Return safe user-facing errors
+- Log internal errors server-side
+- Never return raw stack traces in production responses
+- Prevent privilege escalation
+- Prevent direct URL access to unauthorized pages
+- Prevent unauthorized API calls
+- Add security headers
+- Validate uploaded file types and sizes where uploads exist
+
+==================================================
+G. REQUIRED WELCOME PAGE
+==================================================
+
+Create the required flow:
+
+Login → Welcome Page → Dashboard
+
+The Welcome Page must:
+
+- Appear only after successful authentication
+- Be divided visually into two sections
+- Display the company name
+- Display Pashto content
+- Display English content
+- Remain visible for approximately three seconds
+- Automatically open the dashboard after the timer
+- Allow immediate continuation by pressing Enter
+- Cancel the timer after Enter to prevent double navigation
+- Preserve secure route behavior
+- Work on desktop and mobile
+
+Include these Pashto concepts:
+
+- د ښه هوساینه زموږ سره تجربه کړئ
+- باور ستاسو، کیفیت زموږ
+- د ښه معیار سمبول
+
+Add accurate English equivalents.
+
+==================================================
+H. COMPANY SETTINGS AND CURRENCIES
+==================================================
+
+Create working company settings for:
+
+- Company name
+- Company abbreviation
+- Logo
+- Phone numbers
+- WhatsApp
+- Email
+- Website
+- Physical address
+- Print footer
+- Default language
+- Default currency
+- Receipt prefix
+- Sale prefix
+- Purchase prefix
+- Return-bill prefix
+- Employee prefix
+- Rental prefix
+
+Support exactly these currencies initially:
+
+- AFN
+- USD
+- PKR
+
+Rules:
+
+- Store currency on every financial transaction
+- Keep all currency totals separate
+- Never combine currencies without a documented exchange transaction
+- Store exchange rate when conversion occurs
+- Do not calculate one false grand total across currencies
+- Show separate receivable and payable values by currency
+
+==================================================
+I. PROJECT, BLOCK, FLOOR, AND PROPERTY STRUCTURE
+==================================================
+
+Create a dynamic hierarchy:
+
+Project Section
+→ Block
+→ Floor
+→ Property Unit
+
+Property-unit types:
+
+- House
+- Shop
+- Parking
+- Mosque
+- Supermarket
+- Other facility
+
+Property statuses:
+
+- Available
+- Reserved
+- Sold
+- Rented
+- Unavailable
+
+Each property unit must support:
+
+- Unique database ID
+- Unique business/display identifier
+- Project section
+- Block
+- Floor
+- Unit type
+- Unit number
+- Room count
+- Size where applicable
+- Sale eligibility
+- Rental eligibility
+- Status
+- Notes
+- Created by
+- Updated by
+- Created timestamp
+- Updated timestamp
+
+Create database-level unique constraints preventing duplicate identifiers in
+the correct scope.
+
+Create and verify this seed structure:
+
+SECTION A:
+
+- A1
+- A2
+- A3
+- A4
+- A5
+- Six floors per block
+- Four houses per floor
+- Total: 120 houses
+
+SECTION B:
+
+- B1
+- B2
+- B3
+- B4
+- B5
+- Six floors per block
+- Five houses per floor
+- Total: 150 houses
+
+Required totals:
+
+- 10 blocks
+- 60 floors
+- 270 houses
+
+The seed operation must be idempotent.
+
+Running the seed more than once must not create duplicates.
+
+Administrators must also be able to add future projects, blocks, floors,
+houses, shops, parking spaces, mosques, supermarkets, and facilities.
+
+Create CRUD pages and working API endpoints for these records.
+
+Use safe deactivation where a record is referenced by financial transactions.
+
+==================================================
+J. CUSTOMERS AND LEDGERS
+==================================================
+
+Support customer categories required by the PDFs, including:
+
+- Individual customer
+- Market customer
+- Goods-purchasing customer
+- Property-sales customer
+- Shop-sales customer
+- Rental customer
+- Exchange customer
+
+Customer fields:
+
+- Customer number
+- Name
+- Father name
+- Grandfather name
+- Tazkira number
+- Phone
+- Address
+- Category
+- Notes
+- Active status
+- Audit fields
+
+Every customer must have currency-separated ledger reporting.
+
+Ledger entries must include:
+
+- Entry number
+- Date
+- Reference
+- Description
+- Debit
+- Credit
+- Running balance
+- Currency
+- Source module
+- Source transaction ID
+- Created by
+
+Provide:
+
+- Date filters
+- Search
+- Currency filter
+- Print
+- Export where appropriate
+
+Display clearly:
+
+- Customer owes company: red
+- Company owes customer: clearly marked payable
+- Settled balance: zero/settled
+
+Do not permanently delete customers with transactions.
+
+==================================================
+K. SALES, INSTALLMENTS, AND RECEIPTS
+==================================================
+
+Repair the current sale creation HTTP 500 failure.
+
+Find and remove the nested Sequelize transaction bug correctly.
+
+Do not work around it by disabling transactions.
+
+A confirmed sale must run in one atomic database transaction.
+
+The sale workflow must:
+
+1. Validate the customer
+2. Validate the property
+3. Confirm that the property is Available or validly Reserved
+4. Prevent duplicate sale of the same property
+5. Create the sale
+6. Change property status to Sold
+7. Create the initial receipt when money is received
+8. Create customer-ledger entries
+9. Create the incoming journal entry
+10. Calculate remaining balance with decimal.js
+11. Add audit-log records
+12. Commit all actions together
+
+If any step fails, roll back everything.
+
+Sale fields:
+
+- Sale number
+- Customer
+- Date
+- Project section
+- Block
+- Floor
+- Property
+- Unit type
+- Room count
+- Price
+- Currency
+- First received amount
+- Remaining amount
+- Payment method
+- Notes
+- Status
+
+Support multiple installments.
+
+Each receipt must include:
+
+- Sequential receipt number
+- Customer
+- Sale
+- Receipt date
+- Previous balance
+- Received amount
+- New balance
+- Currency
+- Payment method
+- Description
+- Created by
+
+Rules:
+
+- Receipt amount reduces the remaining balance
+- Prevent incorrect negative balance
+- Prevent unauthorized overpayment
+- Keep currency consistent with the sale unless a valid exchange transaction is
+  used
+- Every receipt appears in customer ledger
+- Every receipt appears in the daily journal
+- Every receipt is printable
+- Company information appears in print output
+
+Visual requirements:
+
+- Received values: green
+- Remaining values: red
+- Sold-property information: dark/black
+
+==================================================
+L. RENTAL MANAGEMENT
+==================================================
+
+Create a complete rental module.
+
+Rental fields:
+
+- Rental number
+- Tenant/customer
+- Property unit
+- Start date
+- End date
+- Rent amount
+- Currency
+- Payment frequency
+- Deposit
+- Status
+- Notes
+
+Rules:
+
+- Prevent double rental
+- Prevent rental of an ineligible property
+- Update property status
+- Link rental to tenant
+- Create rental receipts
+- Create tenant-ledger entries
+- Create journal entries
+- Track paid and unpaid rent
+- Support active, expired, cancelled, and completed contracts
+- Add search and date filters
+- Preserve edit history
+
+Create printable:
+
+- Rental contract summary
+- Rental receipt
+- Tenant ledger
+- Payment history
+
+==================================================
+M. DAILY JOURNAL
+==================================================
+
+Create a date-based journal with:
+
+- Incoming money
+- Outgoing money
+
+Automatically post entries from:
+
+- Sales receipts
+- Rental receipts
+- Customer payments
+- Expenses
+- Purchase payments
+- Employee payments
+- Partner withdrawals
+- Exchange transactions
+
+Every journal entry must include:
+
+- Entry number
+- Date
+- Direction
+- Source module
+- Source record ID
+- Description
+- Amount
+- Currency
+- Payment/cash account
+- Created by
+- Updated by
+- Audit timestamps
+
+Prevent duplicate automatic posting by using a unique source-module and
+source-record relationship or another safe idempotency strategy.
+
+Default the journal to the current date.
+
+Allow:
+
+- Previous/next date
+- Custom date
+- Search
+- Currency filter
+- Source filter
+- Print
+
+Show separate totals:
+
+- Incoming AFN
+- Outgoing AFN
+- Incoming USD
+- Outgoing USD
+- Incoming PKR
+- Outgoing PKR
+
+Financial corrections must use reversal or cancellation where accounting
+integrity requires it.
+
+==================================================
+N. EXPENSES
+==================================================
+
+Create configurable expense categories.
+
+Initial examples:
+
+- Kitchen
+- Office
+- Transport
+- Utilities
+- Construction
+- Salaries
+- Maintenance
+- Other
+
+Expense fields:
+
+- Expense number
+- Category
+- Date
+- Description
+- Amount
+- Currency
+- Payee
+- Related project
+- Reference/attachment
+- Created by
+
+Posting an expense must automatically create one outgoing journal entry.
+
+Provide:
+
+- Daily report
+- Weekly report
+- Monthly report
+- Category report
+- Multiple-category report
+- Custom date-range report
+- Currency-separated totals
+- Print and export
+
+==================================================
+O. PURCHASING, SUPPLIERS, AND RETURN BILLS
+==================================================
+
+Create supplier and purchasing management.
+
+Purchase fields:
+
+- Purchase number
+- Supplier
+- Date
+- Item name
+- Quantity
+- Unit
+- Unit price
+- Total
+- Currency
+- Paid amount
+- Remaining amount
+- Related project
+- Notes
+
+Synchronize atomically:
+
+- Purchase
+- Supplier ledger
+- Payment
+- Journal
+- Company payable
+
+Show:
+
+- Total purchased
+- Total paid
+- Remaining payable
+- Supplier credit
+
+Create return bills linked to purchases.
+
+Return-bill fields:
+
+- Sequential return number using company abbreviation
+- Original purchase
+- Supplier
+- Date
+- Returned item
+- Quantity
+- Amount
+- Currency
+- Reason
+- Notes
+
+A confirmed return must atomically update:
+
+- Purchase totals
+- Supplier ledger
+- Journal or financial adjustment
+- Payable/credit amounts
+- Audit log
+
+Return-bill numbers must be unique and sequential.
+
+==================================================
+P. EMPLOYEES AND ATTENDANCE
+==================================================
+
+Create employee management.
+
+Employee fields:
+
+- Employee number using company abbreviation
+- Name
+- Father name
+- Phone
+- Position
+- Daily wage or salary method
+- Currency
+- Start date
+- Status
+- Notes
+
+Attendance statuses:
+
+- Present
+- Absent
+- Leave
+- Half day
+
+Rules:
+
+- Default to current date
+- Prevent duplicate attendance for the same employee and date
+- Calculate daily payable where applicable
+- Add payable amount to employee account
+- Track advance payments
+- Track employee receivable/payable
+- Create outgoing journal entry for employee payment
+- Maintain complete employee ledger and payment history
+
+==================================================
+Q. EXCHANGE / SARAFI
+==================================================
+
+Implement the explicit PDF requirements without inventing unsupported rules.
+
+Support:
+
+- Exchange party
+- Date
+- Currency given
+- Amount given
+- Currency received
+- Amount received
+- Exchange rate
+- Fees
+- Reference
+- Notes
+
+Create separate party ledger balances by currency.
+
+Every confirmed exchange transaction must:
+
+- Record both sides
+- Store the explicit rate
+- Post correct journal entries
+- Preserve currency separation
+- Create audit history
+
+Mark genuinely unclear PDF rules as UNRESOLVED.
+
+==================================================
+R. PARTNERS, INVESTMENTS, PROFIT, AND LOSS
+==================================================
+
+Create partner accounts.
+
+Fields and records:
+
+- Partner identity
+- Initial investment
+- Currency
+- Ownership percentage or agreed sharing method
+- Additional investment
+- Withdrawals
+- Profit allocation
+- Loss allocation
+- Notes
+
+Profit and loss must use posted and verified transactions only.
+
+Show separately by currency:
+
+- Property-sale income
+- Shop-sale income
+- Rental income
+- Other incoming money
+- Purchases
+- Expenses
+- Employee costs
+- Partner withdrawals
+- Available balance
+- Profit
+- Loss
+
+Do not combine currencies unless an explicit reporting currency and exchange
+rates are selected.
+
+==================================================
+S. GENERAL REPORTS
+==================================================
+
+Create a General Company Report in this order:
+
+1. Purchasing
+2. Expenses
+3. Individual and market customers
+4. Exchange/Sarafi
+5. Property and shop sales
+6. Rentals
+7. Employees
+8. Projects
+
+Every section must support:
+
+- Start date
+- End date
+- Currency
+- Search
+- Print
+- Export where appropriate
+
+Clearly distinguish:
+
+- Money received
+- Money paid
+- Money owed to the company
+- Money owed by the company
+
+Project reports must show:
+
+- Blocks
+- Floors
+- Total properties
+- Available
+- Reserved
+- Sold
+- Rented
+- Unavailable
+
+All general-report values must reconcile with module totals.
+
+Add automated reconciliation tests.
+
+==================================================
+T. HIJRI SHAMSI, GREGORIAN, PRINTING, AND EXPORT
+==================================================
+
+Add reliable Hijri Shamsi/Jalali date support.
+
+Operational records should support Hijri Shamsi where required.
+
+Printed output should display:
+
+- Hijri Shamsi date
+- Gregorian date
+
+Create professional print views for:
+
+- Customer ledger
+- Sale receipt
+- Installment history
+- Sale summary
+- Rental agreement
+- Rental receipt
+- Supplier ledger
+- Purchase
+- Return bill
+- Expense report
+- Employee account
+- Journal
+- Partner statement
+- General report
+
+Every print view must include:
+
+- Company name
+- Logo
+- Address
+- Phone
+- WhatsApp
+- Email
+- Website
+- Print date
+- Report range
+- Prepared-by user
+
+Add CSV or Excel-compatible export for tabular reports where practical.
+
+==================================================
+U. AUDIT LOG AND SAFE CORRECTIONS
+==================================================
+
+Complete the audit log.
+
+Track:
+
+- Login
+- Logout
+- Failed login
+- Account lock
+- Administrator unlock
+- Password change
+- Create
+- Edit
+- Cancel
+- Reverse
+- Status change
+- Financial correction
+- Old value
+- New value
+- User
+- Date/time
+- Related entity and record
+
+Do not permanently delete posted financial transactions.
+
+Implement:
+
+- Draft
+- Posted
+- Cancelled
+- Reversed
+
+where appropriate.
+
+Corrections must recalculate affected:
+
+- Ledgers
+- Journal
+- Balances
+- Reports
+- Property statuses
+
+Prevent orphan records and broken references.
+
+==================================================
+V. DASHBOARD
+==================================================
+
+Make every dashboard value database-driven.
+
+Display at minimum:
+
+- Total blocks
+- Total floors
+- Total properties
+- Available properties
+- Reserved properties
+- Sold properties
+- Rented properties
+- Total customers
+- Sales totals by currency
+- Received totals by currency
+- Outstanding totals by currency
+- Today’s incoming money
+- Today’s outgoing money
+- Active rentals
+- Attendance summary
+- Recent transactions
+- Company receivables
+- Company payables
+- Important alerts
+
+No hard-coded dashboard values are permitted.
+
+==================================================
+W. AUTOMATED TESTING
+==================================================
+
+The project currently has no automated test suite.
+
+Create a real test suite.
+
+Use appropriate tools compatible with the existing stack, such as:
+
+- Vitest or the existing preferred Node test runner
+- Supertest for API integration tests
+- React Testing Library for important UI behavior
+- Playwright for end-to-end browser flows
+
+Create tests for:
+
+1. Login
+2. Three failed attempts
+3. Account lock
+4. Administrator unlock
+5. Password change
+6. RBAC
+7. Welcome page
+8. Three-second navigation
+9. Enter navigation
+10. Seed idempotency
+11. 10 blocks
+12. 60 floors
+13. 270 houses
+14. Duplicate identifiers
+15. Project CRUD
+16. Customer CRUD
+17. Sale creation
+18. Sale rollback on failure
+19. Duplicate sale prevention
+20. First receipt
+21. Multiple installments
+22. Ledger calculation
+23. Journal posting
+24. Duplicate journal prevention
+25. Rental creation
+26. Double-rental prevention
+27. Expense posting
+28. Purchase and supplier ledger
+29. Return bill
+30. Attendance duplicate prevention
+31. Employee payment
+32. Exchange transaction
+33. Partner profit/loss
+34. Report reconciliation
+35. Currency separation
+36. Unauthorized API access
+37. Safe API error responses
+38. Responsive login, welcome, and dashboard smoke tests
+
+Create or update scripts so the complete suite runs with one command.
+
+Support both PowerShell and shell where practical:
+
+scripts/test.ps1
+scripts/test.sh
+
+Run:
+
+- TypeScript checks
+- Lint
+- Backend tests
+- Frontend tests
+- Integration tests
+- Browser tests
+- Production build
+
+Do not mark the task complete while required tests fail.
+
+==================================================
+X. BACKUP, RESTORATION, AND OPERATIONS
+==================================================
+
+Create:
+
+- SQLite backup script
+- SQLite integrity-check script
+- Documented restoration procedure
+- Environment-variable example file without secrets
+- Production startup documentation
+- Replit startup configuration
+- Database migration instructions
+- Seed instructions
+- Troubleshooting guide
+
+Create:
+
+docs/operations/BACKUP_AND_RESTORE.md
+docs/operations/LOCAL_AND_REPLIT_RUNBOOK.md
+docs/operations/TROUBLESHOOTING.md
+
+Test the backup process.
+
+Do not overwrite the active database during restoration testing.
+
+==================================================
+Y. INTERNAL EXECUTION CHECKPOINTS
+==================================================
+
+Complete the work continuously in this order:
+
+Checkpoint 1:
+- Safety backup
+- Git checkpoint
+- Existing build verification
+- Security foundation
+- Account lock
+- Roles
+- Welcome page
+- API error protection
+
+Checkpoint 2:
+- Project hierarchy
+- Seed 10/60/270
+- Dynamic CRUD
+- Template visual mapping
+- Responsive RTL
+
+Checkpoint 3:
+- Customers
+- Ledgers
+- Repair sales
+- Receipts
+- Installments
+- Journal synchronization
+
+Checkpoint 4:
+- Rentals
+- Expenses
+- Purchases
+- Suppliers
+- Return bills
+
+Checkpoint 5:
+- Employees
+- Attendance
+- Exchange
+- Partners
+- Profit/loss
+
+Checkpoint 6:
+- Reports
+- Jalali dates
+- Printing
+- Export
+- Dashboard
+
+Checkpoint 7:
+- Automated testing
+- Security verification
+- Backup/restore
+- Final reconciliation
+- Documentation
+
+After every checkpoint:
+
+1. Run the relevant tests
+2. Fix failures
+3. Confirm database integrity
+4. Create a local Git commit
+5. Continue automatically to the next checkpoint
+
+Do not push to GitHub.
+
+==================================================
+Z. REQUIREMENTS MATRIX AND FINAL EVIDENCE
+==================================================
+
+Update:
+
+docs/audit/REQUIREMENTS_TRACEABILITY.md
+
+For all 222 audited requirements, record:
+
+- Requirement
+- PDF source
+- Page
+- Implementation file
+- API route
+- Database entity
+- Test name
+- Evidence
+- Final status
+
+Allowed final statuses:
+
+- COMPLETE
+- PARTIAL
+- MISSING
+- BLOCKED
+- UNRESOLVED
+
+Do not use COMPLETE unless:
+
+- UI works
+- Backend works
+- Database persists
+- Authorization works
+- Required calculations work
+- Automated or repeatable test evidence exists
+
+Create:
+
+docs/completion/FINAL_COMPLETION_REPORT.md
+docs/completion/FINAL_TEST_REPORT.md
+docs/completion/FINAL_SECURITY_REPORT.md
+docs/completion/FINAL_DATABASE_REPORT.md
+docs/completion/FINAL_REQUIREMENTS_REPORT.md
+
+Create screenshots under:
+
+docs/evidence/final/
+
+Include at least:
+
+- Login
+- Account locked
+- Welcome
+- Dashboard
+- Projects
+- 10/60/270 database totals
+- Customers
+- Sale
+- Receipt
+- Customer ledger
+- Rental
+- Journal
+- Expenses
+- Purchasing
+- Return bill
+- Employees
+- Attendance
+- Exchange
+- Partners
+- Reports
+- Mobile RTL layout
+
+==================================================
+FINAL COMPLETION CONDITIONS
+==================================================
+
+Do not claim completion until:
+
+- Application installs successfully
+- Backend runs
+- Frontend runs
+- SQLite connects
+- Migrations succeed
+- Seed succeeds
+- 10 blocks exist
+- 60 floors exist
+- 270 houses exist
+- Account locks after three failed attempts
+- Administrator unlock works
+- Welcome page works
+- Create Role works
+- Sale creation no longer returns HTTP 500
+- Sale is atomic
+- Duplicate sale is prevented
+- Receipts and installments work
+- Ledgers reconcile
+- Journal synchronization works
+- Rentals work
+- Expenses work
+- Purchasing works
+- Return bills work
+- Employees and attendance work
+- Exchange works
+- Partner calculations work
+- Reports reconcile
+- Jalali dates work
+- Printing works
+- Dashboard is database-driven
+- Raw stack traces are not exposed
+- Rate limiting works
+- CSRF protection works
+- Automated tests exist
+- Required automated tests pass
+- Production build passes
+- Backup process is documented and tested
+- Git status is clean
+
+==================================================
+FINAL RESPONSE FORMAT
+==================================================
+
+At the end, provide:
+
+1. Final technology stack
+2. Final run commands
+3. Backend URL
+4. Frontend URL
+5. Database path
+6. Migration result
+7. Seed result
+8. Verified block count
+9. Verified floor count
+10. Verified house count
+11. COMPLETE requirement count
+12. PARTIAL requirement count
+13. MISSING requirement count
+14. BLOCKED requirement count
+15. UNRESOLVED requirement count
+16. UI completion percentage
+17. Backend completion percentage
+18. Database completion percentage
+19. Functional completion percentage
+20. Testing completion percentage
+21. Security completion percentage
+22. Overall verified completion percentage
+23. All commands executed
+24. Tests passed
+25. Tests failed
+26. Screenshots created
+27. Files created
+28. Database backup location
+29. Git branch
+30. Commit hashes for every checkpoint
+31. Final git status
+32. Confirmation that no GitHub push was made
+33. Any genuinely unresolved PDF requirements
+
+Do not provide only a summary.
+
+Complete the implementation, run the application, test the workflows, create
+the evidence, and then provide the final report.
+
+Do not stop after creating a plan.
+Do not stop after fixing only the first failure.
+Do not stop after creating UI placeholders.
+Continue through all checkpoints until the entire explicit PDF scope is
+implemented and verified.

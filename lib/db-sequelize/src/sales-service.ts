@@ -1,4 +1,5 @@
 import Decimal from "decimal.js";
+import type { Transaction } from "sequelize";
 import { sequelize } from "./connection";
 import { Sale, SaleReceipt, SaleCredit, Unit, CashAccount, Account, PostingLink, type SaleStatus } from "./models";
 import { postJournal, reverseJournal, PostingError } from "./posting";
@@ -20,6 +21,12 @@ export interface CreateSaleInput {
   notes?: string | null;
   status?: "draft" | "reserved" | "active";
   createdByUserId?: number | null;
+  /** Optional "first received amount" — records an initial receipt atomically with the sale. */
+  firstReceivedAmount?: string | number | null;
+  firstReceiptMethod?: string;
+  firstReceiptCashAccountId?: number | null;
+  firstReceiptReference?: string | null;
+  firstReceiptNote?: string | null;
 }
 
 export async function createSale(input: CreateSaleInput): Promise<Sale> {
@@ -68,42 +75,72 @@ export async function createSale(input: CreateSaleInput): Promise<Sale> {
       const revenueAccount = await Account.findOne({ where: { code: SALES_REVENUE_ACCOUNT_CODE }, transaction: t });
       if (!arAccount || !revenueAccount) throw new PostingError("Core accounts (1100/4000) are missing");
 
-      await postJournal({
-        transactionDate: input.saleDate,
-        memo: `Sale ${saleNumber} — unit #${unit.id}`,
-        isManual: false,
-        createdByUserId: input.createdByUserId ?? null,
-        source: { module: "sale", sourceId: sale.id, postingType: "sale_creation" },
-        lines: [
-          {
-            accountId: arAccount.id,
-            currencyCode: input.currencyCode,
-            direction: "debit",
-            amount: finalPrice.toFixed(4),
-            partyType: "customer",
-            partyId: input.partyId,
-            description: `Sale ${saleNumber} receivable`,
-          },
-          {
-            accountId: revenueAccount.id,
-            currencyCode: input.currencyCode,
-            direction: "credit",
-            amount: finalPrice.toFixed(4),
-            description: `Sale ${saleNumber} revenue`,
-          },
-        ],
-      });
+      await postJournal(
+        {
+          transactionDate: input.saleDate,
+          memo: `Sale ${saleNumber} — unit #${unit.id}`,
+          isManual: false,
+          createdByUserId: input.createdByUserId ?? null,
+          source: { module: "sale", sourceId: sale.id, postingType: "sale_creation" },
+          lines: [
+            {
+              accountId: arAccount.id,
+              currencyCode: input.currencyCode,
+              direction: "debit",
+              amount: finalPrice.toFixed(4),
+              partyType: "customer",
+              partyId: input.partyId,
+              description: `Sale ${saleNumber} receivable`,
+            },
+            {
+              accountId: revenueAccount.id,
+              currencyCode: input.currencyCode,
+              direction: "credit",
+              amount: finalPrice.toFixed(4),
+              description: `Sale ${saleNumber} revenue`,
+            },
+          ],
+        },
+        t,
+      );
 
       unit.status = status === "reserved" ? "reserved" : "sold";
       await unit.save({ transaction: t });
+
+      if (input.firstReceivedAmount !== undefined && input.firstReceivedAmount !== null) {
+        const firstAmount = new Decimal(input.firstReceivedAmount);
+        if (firstAmount.greaterThan(0)) {
+          await applyReceipt(
+            sale,
+            {
+              saleId: sale.id,
+              amount: input.firstReceivedAmount,
+              currencyCode: input.currencyCode,
+              receiptDate: input.saleDate,
+              method: input.firstReceiptMethod,
+              cashAccountId: input.firstReceiptCashAccountId ?? null,
+              reference: input.firstReceiptReference ?? null,
+              note: input.firstReceiptNote ?? "Initial receipt recorded at sale creation",
+              receivedByUserId: input.createdByUserId ?? null,
+            },
+            t,
+          );
+        }
+      }
     }
 
     return sale;
   });
 }
 
-async function computeBalance(sale: Sale): Promise<Decimal> {
-  const receipts = await SaleReceipt.findAll({ where: { saleId: sale.id, voidedAt: null } });
+/**
+ * Always pass the caller's transaction (when inside one) — SQLite/Sequelize may route a
+ * transaction-less query to a different pooled connection that cannot see this transaction's
+ * uncommitted writes yet, so an untransacted read here can compute a stale balance mid-transaction
+ * (this previously caused a reversed receipt to leave the sale stuck as "fully_paid").
+ */
+async function computeBalance(sale: Sale, t?: Transaction): Promise<Decimal> {
+  const receipts = await SaleReceipt.findAll({ where: { saleId: sale.id, voidedAt: null }, transaction: t });
   const received = receipts.reduce((sum, r) => sum.plus(new Decimal(r.amount)), new Decimal(0));
   return new Decimal(sale.finalPrice).minus(received);
 }
@@ -121,9 +158,13 @@ export interface AddReceiptInput {
   allowOverpayment?: boolean;
 }
 
-export async function addSaleReceipt(input: AddReceiptInput): Promise<SaleReceipt> {
-  const sale = await Sale.findByPk(input.saleId);
-  if (!sale) throw new PostingError("Sale not found");
+/**
+ * Core receipt-posting logic, shared by addSaleReceipt (its own transaction) and createSale
+ * (an initial receipt posted inside the sale's own transaction). Must always run inside a
+ * transaction the caller already owns — never opens one itself — to avoid the nested/independent
+ * transaction bug that previously caused sale creation to fail with a 500 on SQLite.
+ */
+async function applyReceipt(sale: Sale, input: AddReceiptInput, t: Transaction): Promise<SaleReceipt> {
   if (sale.status === "cancelled" || sale.status === "reversed") {
     throw new PostingError(`Cannot add a receipt to a ${sale.status} sale`);
   }
@@ -134,7 +175,7 @@ export async function addSaleReceipt(input: AddReceiptInput): Promise<SaleReceip
   const amount = new Decimal(input.amount);
   if (amount.lessThanOrEqualTo(0)) throw new PostingError("Receipt amount must be greater than zero");
 
-  const balance = await computeBalance(sale);
+  const balance = await computeBalance(sale, t);
   const appliedAmount = Decimal.min(amount, Decimal.max(balance, 0));
   const overpayAmount = amount.minus(appliedAmount);
 
@@ -146,21 +187,22 @@ export async function addSaleReceipt(input: AddReceiptInput): Promise<SaleReceip
 
   let cashAccount: CashAccount | null = null;
   if (input.cashAccountId) {
-    cashAccount = await CashAccount.findByPk(input.cashAccountId);
+    cashAccount = await CashAccount.findByPk(input.cashAccountId, { transaction: t });
     if (!cashAccount) throw new PostingError("Cash account not found");
     if (cashAccount.currencyCode !== input.currencyCode) {
       throw new PostingError("Cash account currency does not match receipt currency");
     }
   }
 
-  return sequelize.transaction(async (t) => {
-    const receiptNumber = await nextDocumentNumber("receipt", t);
-    const receipt = await SaleReceipt.create(
+  const receiptNumber = await nextDocumentNumber("receipt", t);
+  const receipt = await SaleReceipt.create(
       {
         receiptNumber,
         saleId: sale.id,
         receiptDate: input.receiptDate,
         amount: amount.toFixed(4),
+        previousBalance: balance.toFixed(4),
+        newBalance: balance.minus(appliedAmount).toFixed(4),
         currencyCode: input.currencyCode,
         method: input.method ?? "cash",
         cashAccountId: input.cashAccountId ?? null,
@@ -207,20 +249,24 @@ export async function addSaleReceipt(input: AddReceiptInput): Promise<SaleReceip
       });
     }
 
-    await postJournal({
-      transactionDate: input.receiptDate,
-      memo: `Receipt ${receiptNumber} for sale ${sale.saleNumber}`,
-      isManual: false,
-      createdByUserId: input.receivedByUserId ?? null,
-      source: { module: "sale_receipt", sourceId: receipt.id, postingType: "sale_receipt" },
-      lines,
-    });
+    await postJournal(
+      {
+        transactionDate: input.receiptDate,
+        memo: `Receipt ${receiptNumber} for sale ${sale.saleNumber}`,
+        isManual: false,
+        createdByUserId: input.receivedByUserId ?? null,
+        source: { module: "sale_receipt", sourceId: receipt.id, postingType: "sale_receipt" },
+        lines,
+      },
+      t,
+    );
 
     if (overpayAmount.greaterThan(0)) {
       await SaleCredit.create(
         {
           partyId: sale.partyId,
           sourceSaleId: sale.id,
+          sourceReceiptId: receipt.id,
           currencyCode: input.currencyCode,
           amount: overpayAmount.toFixed(4),
           notes: `Overpayment on receipt ${receiptNumber}`,
@@ -237,8 +283,13 @@ export async function addSaleReceipt(input: AddReceiptInput): Promise<SaleReceip
     }
     await sale.save({ transaction: t });
 
-    return receipt;
-  });
+  return receipt;
+}
+
+export async function addSaleReceipt(input: AddReceiptInput): Promise<SaleReceipt> {
+  const sale = await Sale.findByPk(input.saleId);
+  if (!sale) throw new PostingError("Sale not found");
+  return sequelize.transaction((t) => applyReceipt(sale, input, t));
 }
 
 export async function reverseSaleReceipt(receiptId: number, params: { userId: number; reason: string }): Promise<SaleReceipt> {
@@ -249,16 +300,23 @@ export async function reverseSaleReceipt(receiptId: number, params: { userId: nu
   const link = await PostingLink.findOne({ where: { sourceModule: "sale_receipt", sourceId: receipt.id, postingType: "sale_receipt" } });
   if (!link) throw new PostingError("No posting found for this receipt");
 
-  await reverseJournal(link.transactionId, params);
-
   return sequelize.transaction(async (t) => {
+    await reverseJournal(link.transactionId, params, t);
+
     receipt.voidedAt = new Date();
     receipt.voidReason = params.reason;
     await receipt.save({ transaction: t });
 
+    // Void any standing customer credit that was created from this receipt's overpayment,
+    // so reversing a receipt cannot leave an orphaned credit the party never actually has.
+    await SaleCredit.update(
+      { voidedAt: new Date() },
+      { where: { sourceReceiptId: receipt.id, voidedAt: null }, transaction: t },
+    );
+
     const sale = await Sale.findByPk(receipt.saleId, { transaction: t });
     if (sale) {
-      const balance = await computeBalance(sale);
+      const balance = await computeBalance(sale, t);
       if (balance.greaterThan(0) && sale.status === "fully_paid") {
         sale.status = "active";
         await sale.save({ transaction: t });

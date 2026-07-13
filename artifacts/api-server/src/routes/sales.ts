@@ -51,7 +51,23 @@ router.get("/:id", requireAuth, async (req, res) => {
 });
 
 router.post("/", requireAuth, requirePermission("sales.manage"), async (req: AuthedRequest, res) => {
-  const { unitId, partyId, price, discount, currencyCode, saleDate, paymentType, contractNumber, notes, status } = req.body ?? {};
+  const {
+    unitId,
+    partyId,
+    price,
+    discount,
+    currencyCode,
+    saleDate,
+    paymentType,
+    contractNumber,
+    notes,
+    status,
+    firstReceivedAmount,
+    firstReceiptMethod,
+    firstReceiptCashAccountId,
+    firstReceiptReference,
+    firstReceiptNote,
+  } = req.body ?? {};
   if (typeof unitId !== "number" || typeof partyId !== "number" || price === undefined || typeof currencyCode !== "string" || typeof saleDate !== "string") {
     res.status(400).json({ error: "unitId, partyId, price, currencyCode and saleDate are required" });
     return;
@@ -69,6 +85,11 @@ router.post("/", requireAuth, requirePermission("sales.manage"), async (req: Aut
       notes: notes ?? null,
       status,
       createdByUserId: req.auth!.userId,
+      firstReceivedAmount: firstReceivedAmount ?? null,
+      firstReceiptMethod: firstReceiptMethod ?? undefined,
+      firstReceiptCashAccountId: firstReceiptCashAccountId ?? null,
+      firstReceiptReference: firstReceiptReference ?? null,
+      firstReceiptNote: firstReceiptNote ?? null,
     });
     await recordAudit({ userId: req.auth!.userId, action: "create", entityType: "Sale", entityId: String(sale.id), details: req.body });
     res.status(201).json(sale);

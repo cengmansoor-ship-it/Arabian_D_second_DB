@@ -17,6 +17,8 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   declare fullName: string;
   declare passwordHash: string;
   declare isActive: CreationOptional<boolean>;
+  declare failedLoginAttempts: CreationOptional<number>;
+  declare lockedUntil: CreationOptional<Date | null>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
@@ -32,6 +34,8 @@ User.init(
     fullName: { type: DataTypes.STRING(128), allowNull: false },
     passwordHash: { type: DataTypes.STRING(255), allowNull: false },
     isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+    failedLoginAttempts: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    lockedUntil: { type: DataTypes.DATE, allowNull: true },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
   },

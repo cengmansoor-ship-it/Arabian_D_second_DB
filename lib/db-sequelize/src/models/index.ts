@@ -24,6 +24,18 @@ import { PartyRole } from "./PartyRole";
 import { Sale } from "./Sale";
 import { SaleReceipt } from "./SaleReceipt";
 import { SaleCredit } from "./SaleCredit";
+import { Rental } from "./Rental";
+import { RentalReceipt } from "./RentalReceipt";
+import { Expense } from "./Expense";
+import { Purchase } from "./Purchase";
+import { PurchasePayment } from "./PurchasePayment";
+import { PurchaseReturn } from "./PurchaseReturn";
+import { Employee } from "./Employee";
+import { Attendance } from "./Attendance";
+import { EmployeePayment } from "./EmployeePayment";
+import { ExchangeTransaction } from "./ExchangeTransaction";
+import { Partner } from "./Partner";
+import { PartnerTransaction } from "./PartnerTransaction";
 export type { UnitStatus, UnitPurpose } from "./Unit";
 export type { ProjectStatus } from "./Project";
 export type { FloorType } from "./Floor";
@@ -31,6 +43,14 @@ export type { AccountType } from "./Account";
 export type { JournalDirection, PartyType as JournalPartyType } from "./JournalLine";
 export type { PartyType } from "./Party";
 export type { SaleStatus } from "./Sale";
+export type { RentalStatus, RentalFrequency } from "./Rental";
+export type { ExpenseCategory } from "./Expense";
+export type { PurchaseStatus } from "./Purchase";
+export type { EmployeeWageType, EmployeeStatus } from "./Employee";
+export type { AttendanceStatus } from "./Attendance";
+export type { EmployeePaymentType } from "./EmployeePayment";
+export type { PartnerStatus } from "./Partner";
+export type { PartnerTransactionType } from "./PartnerTransaction";
 
 // Associations
 User.belongsToMany(Role, { through: UserRole, foreignKey: "userId", otherKey: "roleId", as: "roles" });
@@ -73,6 +93,40 @@ SaleReceipt.belongsTo(CashAccount, { foreignKey: "cashAccountId", as: "cashAccou
 SaleCredit.belongsTo(Party, { foreignKey: "partyId", as: "party" });
 SaleCredit.belongsTo(Sale, { foreignKey: "sourceSaleId", as: "sourceSale" });
 
+Rental.belongsTo(Unit, { foreignKey: "unitId", as: "unit" });
+Rental.belongsTo(Party, { foreignKey: "tenantPartyId", as: "tenant" });
+Unit.hasMany(Rental, { foreignKey: "unitId", as: "rentals" });
+Party.hasMany(Rental, { foreignKey: "tenantPartyId", as: "rentals" });
+Rental.hasMany(RentalReceipt, { foreignKey: "rentalId", as: "receipts" });
+RentalReceipt.belongsTo(Rental, { foreignKey: "rentalId", as: "rental" });
+RentalReceipt.belongsTo(CashAccount, { foreignKey: "cashAccountId", as: "cashAccount" });
+
+Expense.belongsTo(Party, { foreignKey: "payeePartyId", as: "payeeParty" });
+Expense.belongsTo(Project, { foreignKey: "projectId", as: "project" });
+Expense.belongsTo(CashAccount, { foreignKey: "cashAccountId", as: "cashAccount" });
+
+Purchase.belongsTo(Party, { foreignKey: "supplierPartyId", as: "supplier" });
+Party.hasMany(Purchase, { foreignKey: "supplierPartyId", as: "purchases" });
+Purchase.hasMany(PurchasePayment, { foreignKey: "purchaseId", as: "payments" });
+PurchasePayment.belongsTo(Purchase, { foreignKey: "purchaseId", as: "purchase" });
+PurchasePayment.belongsTo(CashAccount, { foreignKey: "cashAccountId", as: "cashAccount" });
+Purchase.hasMany(PurchaseReturn, { foreignKey: "purchaseId", as: "returns" });
+PurchaseReturn.belongsTo(Purchase, { foreignKey: "purchaseId", as: "purchase" });
+
+Employee.hasMany(Attendance, { foreignKey: "employeeId", as: "attendances" });
+Attendance.belongsTo(Employee, { foreignKey: "employeeId", as: "employee" });
+Employee.hasMany(EmployeePayment, { foreignKey: "employeeId", as: "payments" });
+EmployeePayment.belongsTo(Employee, { foreignKey: "employeeId", as: "employee" });
+EmployeePayment.belongsTo(CashAccount, { foreignKey: "cashAccountId", as: "cashAccount" });
+
+ExchangeTransaction.belongsTo(Party, { foreignKey: "partyId", as: "party" });
+Party.hasMany(ExchangeTransaction, { foreignKey: "partyId", as: "exchanges" });
+
+Partner.belongsTo(Party, { foreignKey: "partyId", as: "party" });
+Party.hasOne(Partner, { foreignKey: "partyId", as: "partner" });
+Partner.hasMany(PartnerTransaction, { foreignKey: "partnerId", as: "transactions" });
+PartnerTransaction.belongsTo(Partner, { foreignKey: "partnerId", as: "partner" });
+
 export {
   User,
   Role,
@@ -101,4 +155,16 @@ export {
   Sale,
   SaleReceipt,
   SaleCredit,
+  Rental,
+  RentalReceipt,
+  Expense,
+  Purchase,
+  PurchasePayment,
+  PurchaseReturn,
+  Employee,
+  Attendance,
+  EmployeePayment,
+  ExchangeTransaction,
+  Partner,
+  PartnerTransaction,
 };

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type Account, type JournalTransactionEntry, type JournalDirection } from "../lib/api";
-import { Plus, Minus, BookText } from "lucide-react";
+import { Plus, Minus, BookText, Printer } from "lucide-react";
+import PrintHeader from "../components/PrintHeader";
 
 interface LineForm {
   accountId: number;
@@ -44,19 +45,25 @@ export default function JournalPage() {
 
   return (
     <div>
-      <div className="page-header">
+      <PrintHeader title="د لیدلوري ژورنال" />
+      <div className="page-header no-print">
         <h1 className="page-title">د لیدلوري ژورنال</h1>
-        <div className="page-breadcrumb">
-          <span>کورپاڼه</span>
-          <span>/</span>
-          <span>مالیه</span>
-          <span>/</span>
-          <span>ژورنال</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div className="page-breadcrumb">
+            <span>کورپاڼه</span>
+            <span>/</span>
+            <span>مالیه</span>
+            <span>/</span>
+            <span>ژورنال</span>
+          </div>
+          <button className="btn btn-outline" onClick={() => window.print()} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <Printer size={16} /> چاپ
+          </button>
         </div>
       </div>
 
       {/* Entry form */}
-      <div className="card" style={{ marginBottom: 28 }}>
+      <div className="card no-print" style={{ marginBottom: 28 }}>
         <div className="card-header">
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <BookText size={18} /> نوی لاسي ثبت

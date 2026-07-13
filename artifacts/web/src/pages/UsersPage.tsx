@@ -22,6 +22,11 @@ export default function UsersPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["users"] }),
   });
 
+  const unlockMutation = useMutation({
+    mutationFn: (id: number) => api.post(`/users/${id}/unlock`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["users"] }),
+  });
+
   function toggleRole(role: string) {
     setForm((f) => ({ ...f, roleNames: f.roleNames.includes(role) ? f.roleNames.filter((r) => r !== role) : [...f.roleNames, role] }));
   }
@@ -86,11 +91,21 @@ export default function UsersPage() {
                   <span className={`badge ${u.isActive ? "badge-success" : "badge-danger"}`}>
                     {u.isActive ? "فعال" : "غیرفعال"}
                   </span>
+                  {u.isLocked && (
+                    <span className="badge badge-danger" style={{ marginInlineStart: 8 }}>
+                      بند شوی ({u.failedLoginAttempts} ناسمې هڅې)
+                    </span>
+                  )}
                 </td>
-                <td>
+                <td style={{ display: "flex", gap: 8 }}>
                   <button className="btn btn-ghost btn-sm" onClick={() => toggleActiveMutation.mutate({ id: u.id, isActive: !u.isActive })}>
                     {u.isActive ? "غیرفعالول" : "فعالول"}
                   </button>
+                  {u.isLocked && (
+                    <button className="btn btn-ghost btn-sm" onClick={() => unlockMutation.mutate(u.id)} disabled={unlockMutation.isPending}>
+                      خلاصول (Unlock)
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

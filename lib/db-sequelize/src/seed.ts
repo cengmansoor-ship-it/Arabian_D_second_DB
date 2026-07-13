@@ -1,6 +1,68 @@
 import { sequelize } from "./connection";
-import { User, Role, Permission, CompanySetting, Currency, DocumentSequence, UnitType, Account, CashAccount } from "./models";
+import { User, Role, Permission, CompanySetting, Currency, DocumentSequence, UnitType, Account, CashAccount, Project, Block, Floor, Unit } from "./models";
 import { hashPassword } from "./auth";
+import { runMigrations } from "./migrations";
+
+/**
+ * Required baseline residential structure (idempotent):
+ * Section A: blocks A1-A5, 6 floors each, 4 houses per floor -> 120 houses
+ * Section B: blocks B1-B5, 6 floors each, 5 houses per floor -> 150 houses
+ * Total: 10 blocks, 60 floors, 270 houses.
+ */
+async function seedResidentialStructure(): Promise<void> {
+  // Reuse an existing project named "Arabian D Residence" if one already exists (e.g. created
+  // manually before this seed existed) instead of creating a second, duplicate project.
+  let project = await Project.findOne({ where: { name: "Arabian D Residence" } });
+  if (!project) {
+    project = await Project.create({
+      name: "Arabian D Residence",
+      code: "ARD-MAIN",
+      status: "active",
+      description: "Main residential complex — Sections A and B",
+    });
+  }
+
+  const apartmentType = await UnitType.findOne({ where: { name: "Apartment" } });
+  if (!apartmentType) return; // core unit types seed runs earlier in ensureDatabaseReady; should never happen
+
+  const sections: { prefix: "A" | "B"; count: number; floorsPerBlock: number; unitsPerFloor: number }[] = [
+    { prefix: "A", count: 5, floorsPerBlock: 6, unitsPerFloor: 4 },
+    { prefix: "B", count: 5, floorsPerBlock: 6, unitsPerFloor: 5 },
+  ];
+
+  let blockOrder = 0;
+  for (const section of sections) {
+    for (let b = 1; b <= section.count; b++) {
+      const blockCode = `${section.prefix}${b}`;
+      blockOrder += 1;
+      const [block] = await Block.findOrCreate({
+        where: { projectId: project.id, code: blockCode },
+        defaults: { projectId: project.id, code: blockCode, name: `Block ${blockCode}`, order: blockOrder },
+      });
+
+      for (let f = 1; f <= section.floorsPerBlock; f++) {
+        const [floor] = await Floor.findOrCreate({
+          where: { blockId: block.id, levelNumber: f },
+          defaults: { blockId: block.id, levelNumber: f, name: `Floor ${f}`, floorType: "residential", order: f },
+        });
+
+        for (let u = 1; u <= section.unitsPerFloor; u++) {
+          const unitNumber = `${blockCode}-${f}${String(u).padStart(2, "0")}`;
+          await Unit.findOrCreate({
+            where: { floorId: floor.id, unitNumber },
+            defaults: {
+              floorId: floor.id,
+              unitTypeId: apartmentType.id,
+              unitNumber,
+              status: "available",
+              purpose: "for_sale",
+            },
+          });
+        }
+      }
+    }
+  }
+}
 
 const CORE_PERMISSIONS = [
   "users.manage",
@@ -14,6 +76,9 @@ const CORE_PERMISSIONS = [
   "hr.manage",
   "reports.view",
   "parties.manage",
+  "expenses.manage",
+  "exchange.manage",
+  "partners.manage",
 ];
 
 const CORE_UNIT_TYPES = [
@@ -34,9 +99,17 @@ const CORE_DOCUMENT_SEQUENCES = [
   { documentType: "sales_contract", prefix: "SC-" },
   { documentType: "rental_contract", prefix: "RC-" },
   { documentType: "receipt", prefix: "RCPT-" },
+  { documentType: "rental_receipt", prefix: "RRCPT-" },
   { documentType: "purchase_invoice", prefix: "PINV-" },
+  { documentType: "purchase_payment", prefix: "PPAY-" },
+  { documentType: "purchase_return", prefix: "PRET-" },
   { documentType: "expense_voucher", prefix: "EXP-" },
   { documentType: "journal_entry", prefix: "JE-" },
+  { documentType: "employee", prefix: "EMP-" },
+  { documentType: "employee_payment", prefix: "EPAY-" },
+  { documentType: "exchange", prefix: "EXC-" },
+  { documentType: "partner", prefix: "PTR-" },
+  { documentType: "partner_transaction", prefix: "PTX-" },
 ];
 
 /**
@@ -47,6 +120,7 @@ const CORE_DOCUMENT_SEQUENCES = [
 export async function ensureDatabaseReady(): Promise<void> {
   await sequelize.authenticate();
   await sequelize.sync();
+  await runMigrations();
 
   const [adminRole] = await Role.findOrCreate({
     where: { name: "admin" },
@@ -82,10 +156,14 @@ export async function ensureDatabaseReady(): Promise<void> {
     { code: "1000", name: "Cash on Hand", type: "asset" },
     { code: "1100", name: "Accounts Receivable", type: "asset" },
     { code: "2000", name: "Accounts Payable", type: "liability" },
+    { code: "2100", name: "Tenant Deposits Payable", type: "liability" },
     { code: "3000", name: "Owner's Equity", type: "equity" },
     { code: "4000", name: "Sales Revenue", type: "income" },
     { code: "4100", name: "Rental Revenue", type: "income" },
     { code: "5000", name: "General Expenses", type: "expense" },
+    { code: "5100", name: "Salaries & Wages Expense", type: "expense" },
+    { code: "5200", name: "Exchange Fees Expense", type: "expense" },
+    { code: "3100", name: "Exchange Clearing", type: "asset" },
   ];
   for (const acc of coreAccounts) {
     await Account.findOrCreate({ where: { code: acc.code }, defaults: { ...acc, isSystem: true, isActive: true } });
@@ -128,4 +206,6 @@ export async function ensureDatabaseReady(): Promise<void> {
     });
     await admin.addRole(adminRole);
   }
+
+  await seedResidentialStructure();
 }
