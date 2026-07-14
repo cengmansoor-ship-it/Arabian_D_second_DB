@@ -1,17 +1,25 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, X } from "lucide-react";
+import { Plus, X, LayoutList, LayoutGrid } from "lucide-react";
 import { api, type Purchase, type PurchaseStatus, type Party } from "../lib/api";
-import FilterBar from "../components/FilterBar";
+import JalaliDateInput from "../components/JalaliDateInput";
+import { isoToJalaliString, todayIso } from "../lib/jalali";
 
 const STATUS_LABELS: Record<PurchaseStatus, string> = { open: "پرانیستی", paid: "تادیه شوی", cancelled: "لغوه شوی" };
 const STATUS_COLORS: Record<PurchaseStatus, string> = { open: "badge-warning", paid: "badge-success", cancelled: "badge-danger" };
+
+const CURRENCY_NAMES: Record<string, string> = {
+  AFN: "افغانۍ",
+  USD: "ډالر",
+  PKR: "کلدار",
+};
 
 interface NewPurchaseForm {
   supplierPartyId: number | null;
   purchaseDate: string;
   itemName: string;
+  billNumber: string;
   quantity: string;
   unitOfMeasure: string;
   unitPrice: string;
@@ -21,8 +29,15 @@ interface NewPurchaseForm {
 
 function emptyForm(): NewPurchaseForm {
   return {
-    supplierPartyId: null, purchaseDate: new Date().toISOString().slice(0, 10),
-    itemName: "", quantity: "1", unitOfMeasure: "", unitPrice: "", currencyCode: "AFN", notes: "",
+    supplierPartyId: null,
+    purchaseDate: todayIso(),
+    itemName: "",
+    billNumber: "",
+    quantity: "1",
+    unitOfMeasure: "",
+    unitPrice: "",
+    currencyCode: "AFN",
+    notes: "",
   };
 }
 
@@ -37,6 +52,7 @@ export default function PurchasesPage() {
   const [endDate, setEndDate] = useState("");
   const [q, setQ] = useState("");
   const [applied, setApplied] = useState({ startDate: "", endDate: "", q: "" });
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   const handleSearch = () => setApplied({ startDate, endDate, q });
   const handleClear = () => { setStartDate(""); setEndDate(""); setQ(""); setApplied({ startDate: "", endDate: "", q: "" }); };
@@ -58,6 +74,13 @@ export default function PurchasesPage() {
     queryFn: () => api.get<Party[]>(`/parties?type=supplier${partyQuery ? `&q=${encodeURIComponent(partyQuery)}` : ""}`),
     enabled: showForm,
   });
+
+  // Auto-compute total
+  const computedTotal = (() => {
+    const qty = parseFloat(form.quantity) || 0;
+    const price = parseFloat(form.unitPrice) || 0;
+    return (qty * price).toFixed(2);
+  })();
 
   const createMutation = useMutation({
     mutationFn: () =>
@@ -84,14 +107,31 @@ export default function PurchasesPage() {
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
         <div>
-          <p className="page-title" style={{ margin: 0 }}>پیرودنې</p>
-          <p className="page-sub">د توکو پیرودل او د عرضه کوونکو حسابونه</p>
+          <p className="page-title" style={{ margin: 0 }}>خریداري</p>
+          <p className="page-sub">د اجناسو خریداري او د عرضه کوونکو حسابونه</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-          <Plus size={16} /> نوې پیرودنه
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            className={`btn btn-sm ${viewMode === "list" ? "btn-primary" : "btn-outline"}`}
+            onClick={() => setViewMode("list")}
+            title="د لیست لید"
+          >
+            <LayoutList size={16} />
+          </button>
+          <button
+            className={`btn btn-sm ${viewMode === "grid" ? "btn-primary" : "btn-outline"}`}
+            onClick={() => setViewMode("grid")}
+            title="د ګریډ لید"
+          >
+            <LayoutGrid size={16} />
+          </button>
+          <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+            <Plus size={16} /> نوې خریداري
+          </button>
+        </div>
       </div>
 
+      {/* Status tabs */}
       <div style={{ display: "flex", gap: 8, margin: "16px 0" }}>
         {["", "open", "paid", "cancelled"].map((s) => (
           <button key={s} className={`btn btn-sm ${statusFilter === s ? "btn-primary" : "btn-outline"}`} onClick={() => setStatusFilter(s)}>
@@ -100,43 +140,117 @@ export default function PurchasesPage() {
         ))}
       </div>
 
-      <div className="card" style={{ padding: 0, overflow: "auto" }}>
-        <table className="fl-table" style={{ fontSize: 13 }}>
-          <thead>
-            <tr>
-              <th>د پیرودنې شمېره</th><th>عرضه کوونکی</th><th>توکی</th><th>مقدار</th>
-              <th>ټول مبلغ</th><th>پاتې</th><th>حالت</th><th>نېټه</th>
-            </tr>
-          </thead>
-          <tbody>
-            {purchases?.map((p) => (
-              <tr key={p.id}>
-                <td>
-                  <Link to={`/purchases/${p.id}`} style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>
-                    {p.purchaseNumber}
-                  </Link>
-                </td>
-                <td>{p.supplier?.name ?? "—"}</td>
-                <td>{p.itemName}</td>
-                <td>{p.quantity} {p.unitOfMeasure ?? ""}</td>
-                <td>{p.totalAmount} {p.currencyCode}</td>
-                <td style={{ color: Number(p.balance ?? 0) > 0 ? "var(--danger)" : "var(--success)", fontWeight: 600 }}>{p.balance ?? "—"}</td>
-                <td><span className={`badge ${STATUS_COLORS[p.status]}`}>{STATUS_LABELS[p.status]}</span></td>
-                <td style={{ whiteSpace: "nowrap", color: "var(--muted)" }}>{p.purchaseDate}</td>
-              </tr>
-            ))}
-            {!purchases?.length && (
-              <tr><td colSpan={8} style={{ textAlign: "center", padding: 32, color: "var(--muted)" }}>تر اوسه هېڅ پیرودنه نشته.</td></tr>
-            )}
-          </tbody>
-        </table>
+      {/* Date filter */}
+      <div className="card" style={{ padding: "12px 16px", marginBottom: 16, display: "flex", flexWrap: "wrap", gap: 12, alignItems: "flex-end" }}>
+        <div>
+          <label className="form-label" style={{ fontSize: 12 }}>د شروع نیټه</label>
+          <JalaliDateInput value={startDate} onChange={setStartDate} />
+        </div>
+        <div>
+          <label className="form-label" style={{ fontSize: 12 }}>د ختم نیټه</label>
+          <JalaliDateInput value={endDate} onChange={setEndDate} />
+        </div>
+        <div>
+          <label className="form-label" style={{ fontSize: 12 }}>لټون (جنس)</label>
+          <input className="form-input" placeholder="جنس نوم..." value={q} onChange={(e) => setQ(e.target.value)} style={{ minWidth: 140 }} />
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="btn btn-primary btn-sm" onClick={handleSearch}>لټون</button>
+          <button className="btn btn-outline btn-sm" onClick={handleClear}>پاک کول</button>
+        </div>
       </div>
 
+      {/* LIST VIEW */}
+      {viewMode === "list" && (
+        <div className="card" style={{ padding: 0, overflow: "auto" }}>
+          <table className="fl-table" style={{ fontSize: 13 }}>
+            <thead>
+              <tr>
+                <th>شمیره</th>
+                <th>تاریخ</th>
+                <th>عرضه کوونکی</th>
+                <th>جنس نوم</th>
+                <th>بیل نمبر</th>
+                <th>تعداد</th>
+                <th>قیمت</th>
+                <th>مجموع</th>
+                <th>رسید</th>
+                <th>الباقی</th>
+                <th>حالت</th>
+              </tr>
+            </thead>
+            <tbody>
+              {purchases?.map((p, idx) => {
+                const totalAmt = parseFloat(p.totalAmount) || 0;
+                const balAmt = parseFloat(p.balance ?? "0") || 0;
+                const paid = totalAmt - balAmt;
+                const curName = CURRENCY_NAMES[p.currencyCode] ?? p.currencyCode;
+                return (
+                  <tr key={p.id}>
+                    <td>
+                      <Link to={`/purchases/${p.id}`} style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>
+                        {idx + 1}
+                      </Link>
+                    </td>
+                    <td style={{ whiteSpace: "nowrap" }}>{isoToJalaliString(p.purchaseDate)}</td>
+                    <td>{p.supplier?.name ?? "—"}</td>
+                    <td>{p.itemName}</td>
+                    <td style={{ color: "var(--muted)" }}>{p.purchaseNumber}</td>
+                    <td>{p.quantity} {p.unitOfMeasure ?? ""}</td>
+                    <td>{p.unitPrice} {curName}</td>
+                    <td>{p.totalAmount} {curName}</td>
+                    <td style={{ color: "var(--success)", fontWeight: 500 }}>{paid.toFixed(2)}</td>
+                    <td style={{ color: balAmt > 0 ? "var(--danger)" : "var(--success)", fontWeight: 600 }}>{p.balance ?? "—"}</td>
+                    <td><span className={`badge ${STATUS_COLORS[p.status]}`}>{STATUS_LABELS[p.status]}</span></td>
+                  </tr>
+                );
+              })}
+              {!purchases?.length && (
+                <tr><td colSpan={11} style={{ textAlign: "center", padding: 32, color: "var(--muted)" }}>تر اوسه هېڅ خریداري نشته.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* GRID VIEW */}
+      {viewMode === "grid" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 16 }}>
+          {purchases?.map((p) => {
+            const totalAmt = parseFloat(p.totalAmount) || 0;
+            const balAmt = parseFloat(p.balance ?? "0") || 0;
+            const paid = totalAmt - balAmt;
+            const curName = CURRENCY_NAMES[p.currencyCode] ?? p.currencyCode;
+            return (
+              <div key={p.id} className="card" style={{ padding: 16 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                  <Link to={`/purchases/${p.id}`} style={{ fontWeight: 700, color: "var(--primary)", textDecoration: "none" }}>{p.itemName}</Link>
+                  <span className={`badge ${STATUS_COLORS[p.status]}`}>{STATUS_LABELS[p.status]}</span>
+                </div>
+                <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 6 }}>{isoToJalaliString(p.purchaseDate)} — {p.supplier?.name ?? "—"}</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, fontSize: 12 }}>
+                  <div><span style={{ color: "var(--muted)" }}>مجموع: </span>{p.totalAmount} {curName}</div>
+                  <div><span style={{ color: "var(--muted)" }}>رسید: </span>{paid.toFixed(2)}</div>
+                  <div style={{ gridColumn: "1/-1" }}>
+                    <span style={{ color: "var(--muted)" }}>الباقی: </span>
+                    <span style={{ fontWeight: 700, color: balAmt > 0 ? "var(--danger)" : "var(--success)" }}>{p.balance ?? "—"}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {!purchases?.length && (
+            <div style={{ gridColumn: "1/-1", textAlign: "center", padding: 40, color: "var(--muted)" }}>تر اوسه هېڅ خریداري نشته.</div>
+          )}
+        </div>
+      )}
+
+      {/* NEW PURCHASE FORM MODAL */}
       {showForm && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
-          <div className="card" style={{ width: 520, maxHeight: "88vh", overflow: "auto", padding: 24 }}>
+          <div className="card" style={{ width: 560, maxHeight: "90vh", overflow: "auto", padding: 24 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <div style={{ fontWeight: 700, fontSize: 16 }}>نوې پیرودنه ثبتول</div>
+              <div style={{ fontWeight: 700, fontSize: 16 }}>نوې خریداري ثبتول</div>
               <button className="btn btn-outline btn-sm" onClick={() => setShowForm(false)}><X size={14} /></button>
             </div>
             {error && (
@@ -154,12 +268,12 @@ export default function PurchasesPage() {
                 </select>
               </div>
               <div>
-                <label className="form-label">توکی</label>
+                <label className="form-label">جنس نوم</label>
                 <input className="form-input" value={form.itemName} onChange={(e) => setForm((f) => ({ ...f, itemName: e.target.value }))} />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
                 <div>
-                  <label className="form-label">مقدار</label>
+                  <label className="form-label">تعداد</label>
                   <input className="form-input" type="number" min={0} value={form.quantity} onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))} />
                 </div>
                 <div>
@@ -167,20 +281,25 @@ export default function PurchasesPage() {
                   <input className="form-input" placeholder="دانه، کیلو..." value={form.unitOfMeasure} onChange={(e) => setForm((f) => ({ ...f, unitOfMeasure: e.target.value }))} />
                 </div>
                 <div>
-                  <label className="form-label">فی واحد نرخ</label>
+                  <label className="form-label">فی واحد قیمت</label>
                   <input className="form-input" type="number" min={0} value={form.unitPrice} onChange={(e) => setForm((f) => ({ ...f, unitPrice: e.target.value }))} />
                 </div>
               </div>
+              <div style={{ background: "var(--surface-2)", padding: "10px 14px", borderRadius: 6, fontSize: 14 }}>
+                <span style={{ color: "var(--muted)" }}>مجموع: </span>
+                <strong>{computedTotal} {CURRENCY_NAMES[form.currencyCode] ?? form.currencyCode}</strong>
+              </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10 }}>
                 <div>
-                  <label className="form-label">نېټه</label>
-                  <input className="form-input" type="date" value={form.purchaseDate} onChange={(e) => setForm((f) => ({ ...f, purchaseDate: e.target.value }))} />
+                  <label className="form-label">نیټه</label>
+                  <JalaliDateInput value={form.purchaseDate} onChange={(v) => setForm((f) => ({ ...f, purchaseDate: v }))} />
                 </div>
                 <div>
                   <label className="form-label">اسعار</label>
                   <select className="form-input" value={form.currencyCode} onChange={(e) => setForm((f) => ({ ...f, currencyCode: e.target.value }))}>
-                    <option value="AFN">AFN</option>
-                    <option value="USD">USD</option>
+                    <option value="AFN">افغانۍ</option>
+                    <option value="USD">ډالر</option>
+                    <option value="PKR">کلدار</option>
                   </select>
                 </div>
               </div>
@@ -190,8 +309,12 @@ export default function PurchasesPage() {
               </div>
             </div>
             <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
-              <button className="btn btn-primary" disabled={!form.supplierPartyId || !form.itemName || !form.quantity || !form.unitPrice || createMutation.isPending} onClick={() => createMutation.mutate()}>
-                ثبتول
+              <button
+                className="btn btn-primary"
+                disabled={!form.supplierPartyId || !form.itemName || !form.quantity || !form.unitPrice || createMutation.isPending}
+                onClick={() => createMutation.mutate()}
+              >
+                ثبت کول
               </button>
               <button className="btn btn-outline" onClick={() => setShowForm(false)}>لغوه</button>
             </div>

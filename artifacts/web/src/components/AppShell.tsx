@@ -35,7 +35,7 @@ interface NavGroup {
 const NAV: NavGroup[] = [
   {
     id: "dashboard",
-    label: "ډشبورډ",
+    label: "کورپاڼه",
     icon: LayoutDashboard,
     to: "/",
     end: true,

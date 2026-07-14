@@ -45,7 +45,8 @@ export const api = {
     request<T>(path, { method: "POST", body: body !== undefined ? JSON.stringify(body) : undefined }),
   put: <T,>(path: string, body?: unknown) =>
     request<T>(path, { method: "PUT", body: body !== undefined ? JSON.stringify(body) : undefined }),
-  delete: <T,>(path: string) => request<T>(path, { method: "DELETE" }),
+  delete: <T,>(path: string, body?: unknown) =>
+    request<T>(path, { method: "DELETE", body: body !== undefined ? JSON.stringify(body) : undefined }),
 };
 
 export interface CurrentUser {
@@ -579,6 +580,21 @@ export interface PartnerTransaction {
   currencyCode: string;
   note: string | null;
   createdAt: string;
+}
+
+export interface MonthlyTrendPoint {
+  label: string;
+  monthIso: string;
+  income: string;
+  expenses: string;
+  purchases: string;
+}
+
+export interface MonthlyTrendsReport {
+  currencyCode: string;
+  months: MonthlyTrendPoint[];
+  customersByType: Record<string, number>;
+  unitsByStatus: Record<string, number>;
 }
 
 export interface ProfitLossReport {

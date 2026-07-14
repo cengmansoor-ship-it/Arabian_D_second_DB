@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { getProfitAndLoss, getDashboardSummary, getGeneralReport } from "@workspace/db-sequelize";
+import { getProfitAndLoss, getDashboardSummary, getGeneralReport, getMonthlyTrends } from "@workspace/db-sequelize";
 import { requireAuth } from "../middlewares/requireAuth";
 import { requirePermission } from "../middlewares/requirePermission";
 
@@ -19,6 +19,13 @@ router.get("/dashboard", requireAuth, async (_req, res) => {
   const today = new Date().toISOString().slice(0, 10);
   const summary = await getDashboardSummary(today);
   res.json(summary);
+});
+
+router.get("/monthly-trends", requireAuth, async (req, res) => {
+  const { currencyCode = "AFN", months } = req.query;
+  const n = typeof months === "string" ? Math.min(24, Math.max(3, Number(months))) : 12;
+  const report = await getMonthlyTrends(typeof currencyCode === "string" ? currencyCode : "AFN", n);
+  res.json(report);
 });
 
 router.get("/general", requireAuth, requirePermission("reports.view"), async (req, res) => {

@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { Printer, Plus, Trash2, BookOpen, AlertCircle } from "lucide-react";
 import PrintHeader from "../components/PrintHeader";
+import JalaliDateInput from "../components/JalaliDateInput";
+import { isoToJalaliString } from "../lib/jalali";
 import Decimal from "decimal.js";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -36,16 +38,16 @@ interface DailyCashPage {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+// Glossary: افغانۍ (AFN) — ډالر (USD) — کلدار (PKR)
 const CURRENCIES = [
-  { code: "AFN", label: "افغانی", symbol: "؋", flag: "🇦🇫" },
+  { code: "AFN", label: "افغانۍ", symbol: "؋", flag: "🇦🇫" },
   { code: "USD", label: "ډالر",   symbol: "$",  flag: "🇺🇸" },
-  { code: "PKR", label: "کلداره", symbol: "₨",  flag: "🇵🇰" },
+  { code: "PKR", label: "کلدار",  symbol: "₨",  flag: "🇵🇰" },
 ];
 
 function fmt(val: string | null | undefined): string {
   if (!val) return "—";
   const d = new Decimal(val);
-  // Show up to 4 decimal places, strip trailing zeros
   return d.toFixed(4).replace(/\.?0+$/, "");
 }
 
@@ -117,7 +119,7 @@ export default function DailyCashJournalPage() {
 
   const voidMutation = useMutation({
     mutationFn: ({ id, reason }: { id: number; reason: string }) =>
-      api.delete(`/roznamcha/${id}`),
+      api.delete(`/roznamcha/${id}`, { reason }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["roznamcha"] });
       setVoidingId(null);
@@ -185,23 +187,11 @@ export default function DailyCashJournalPage() {
         <div className="card-body" style={{ display: "flex", gap: 20, alignItems: "flex-end", flexWrap: "wrap" }}>
           <div>
             <label className="form-label">د شروع نیټه</label>
-            <input
-              className="form-input"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              style={{ width: 160 }}
-            />
+            <JalaliDateInput value={startDate} onChange={setStartDate} />
           </div>
           <div>
             <label className="form-label">د ختم نیټه</label>
-            <input
-              className="form-input"
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              style={{ width: 160 }}
-            />
+            <JalaliDateInput value={endDate} onChange={setEndDate} />
           </div>
           <button
             className="btn btn-primary"
@@ -223,13 +213,11 @@ export default function DailyCashJournalPage() {
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
 
             {/* Date */}
-            <div style={{ minWidth: 140 }}>
+            <div style={{ minWidth: 200 }}>
               <label className="form-label">نیټه</label>
-              <input
-                className="form-input"
-                type="date"
+              <JalaliDateInput
                 value={form.entryDate}
-                onChange={(e) => setForm((f) => ({ ...f, entryDate: e.target.value }))}
+                onChange={(v) => setForm((f) => ({ ...f, entryDate: v }))}
               />
             </div>
 
@@ -245,7 +233,7 @@ export default function DailyCashJournalPage() {
               />
             </div>
 
-            {/* Party */}
+            {/* Party — TODO: auto-link to party ledger when implemented */}
             <div style={{ flex: "2 1 160px" }}>
               <label className="form-label">مشتری (اختیاري)</label>
               <select
@@ -260,7 +248,7 @@ export default function DailyCashJournalPage() {
               </select>
             </div>
 
-            {/* Entry type */}
+            {/* Entry type — داخل (+) / خروج (-) per glossary */}
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <label className="form-label">ډول</label>
               <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", border: "1px solid var(--border)" }}>
@@ -280,7 +268,7 @@ export default function DailyCashJournalPage() {
                       transition: "all 0.1s",
                     }}
                   >
-                    {t === "in" ? "جمع ＋" : "رسیدګی −"}
+                    {t === "in" ? "داخل ＋" : "خروج −"}
                   </button>
                 ))}
               </div>
@@ -327,10 +315,10 @@ export default function DailyCashJournalPage() {
       {page && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16, marginBottom: 24 }}>
           {[
-            { label: "پخوانی پاتي (الباقي)", value: page.openingBalance, color: "var(--primary)" },
-            { label: "ټول جمع (+)", value: page.totalIn, color: "#10b981" },
-            { label: "ټول رسیدګی (−)", value: page.totalOut, color: "var(--danger)" },
-            { label: "اوسنی پاتي (الباقي)", value: page.closingBalance, color: balanceColor(page.closingBalance) },
+            { label: "پخوانی الباقي", value: page.openingBalance, color: "var(--primary)" },
+            { label: "ټول داخل (+)", value: page.totalIn, color: "#10b981" },
+            { label: "ټول خروج (−)", value: page.totalOut, color: "var(--danger)" },
+            { label: "اوسنی الباقي", value: page.closingBalance, color: balanceColor(page.closingBalance) },
           ].map((s) => (
             <div key={s.label} className="card" style={{ border: `1px solid var(--border)` }}>
               <div className="card-body" style={{ padding: "16px 20px" }}>
@@ -348,7 +336,7 @@ export default function DailyCashJournalPage() {
       <div className="card">
         <div className="card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ fontWeight: 700 }}>
-            {curInfo.flag} د {curInfo.label} روزنامچه — {startDate} نه {endDate} پورې
+            {curInfo.flag} د {curInfo.label} روزنامچه — {isoToJalaliString(startDate)} نه {isoToJalaliString(endDate)} پورې
           </div>
           {isFetching && <span style={{ fontSize: 12, color: "var(--muted)" }}>لوډ کیږي...</span>}
         </div>
@@ -358,11 +346,11 @@ export default function DailyCashJournalPage() {
             <thead>
               <tr>
                 <th style={{ width: 50 }}>شمیره</th>
-                <th style={{ width: 110 }}>نیټه</th>
+                <th style={{ width: 120 }}>تاریخ</th>
                 <th>تفصیل</th>
                 <th style={{ width: 140 }}>مشتری</th>
-                <th style={{ width: 130, color: "#10b981" }}>جمع (+)</th>
-                <th style={{ width: 130, color: "var(--danger)" }}>رسیدګی (−)</th>
+                <th style={{ width: 130, color: "#10b981" }}>داخل (+)</th>
+                <th style={{ width: 130, color: "var(--danger)" }}>خروج (−)</th>
                 <th style={{ width: 140 }}>الباقي</th>
                 <th className="no-print" style={{ width: 60 }}></th>
               </tr>
@@ -372,7 +360,7 @@ export default function DailyCashJournalPage() {
               {page && (
                 <tr style={{ background: "var(--surface-2)", fontWeight: 700 }}>
                   <td colSpan={6} style={{ textAlign: "right", color: "var(--muted)", fontSize: 13 }}>
-                    د {startDate} نیټې نه وړاندې پاتي (پخوانی الباقي)
+                    د {isoToJalaliString(startDate)} نیټې نه وړاندې پخوانی الباقي
                   </td>
                   <td style={{ color: balanceColor(page.openingBalance), fontWeight: 800, direction: "ltr" }}>
                     {fmt(page.openingBalance)}
@@ -400,7 +388,7 @@ export default function DailyCashJournalPage() {
                   }}
                 >
                   <td style={{ color: "var(--muted)", fontSize: 13 }}>{idx + 1}</td>
-                  <td style={{ fontSize: 13, whiteSpace: "nowrap" }}>{row.entryDate}</td>
+                  <td style={{ fontSize: 13, whiteSpace: "nowrap" }}>{isoToJalaliString(row.entryDate)}</td>
                   <td>
                     <div style={{ fontWeight: 600 }}>{row.description}</div>
                     {row.voidedAt && (
@@ -411,12 +399,12 @@ export default function DailyCashJournalPage() {
                   </td>
                   <td style={{ color: "var(--muted)", fontSize: 13 }}>{row.partyName ?? "—"}</td>
 
-                  {/* جمع */}
+                  {/* داخل (+) */}
                   <td style={{ fontWeight: 700, color: "#10b981", direction: "ltr", textAlign: "right" }}>
                     {row.amountIn ? `${curInfo.symbol} ${fmt(row.amountIn)}` : ""}
                   </td>
 
-                  {/* رسیدګی */}
+                  {/* خروج (−) */}
                   <td style={{ fontWeight: 700, color: "var(--danger)", direction: "ltr", textAlign: "right" }}>
                     {row.amountOut ? `${curInfo.symbol} ${fmt(row.amountOut)}` : ""}
                   </td>
@@ -444,11 +432,11 @@ export default function DailyCashJournalPage() {
                 </tr>
               ))}
 
-              {/* Closing balance row */}
+              {/* Closing / totals row */}
               {page && page.rows.length > 0 && (
                 <tr style={{ background: "var(--primary)", fontWeight: 800 }}>
                   <td colSpan={4} style={{ color: "#fff", textAlign: "right", fontSize: 14 }}>
-                    ټول
+                    ټوټل
                   </td>
                   <td style={{ color: "#fff", direction: "ltr", textAlign: "right", fontSize: 15 }}>
                     {curInfo.symbol} {fmt(page.totalIn)}

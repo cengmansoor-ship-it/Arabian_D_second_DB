@@ -1,13 +1,15 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, X } from "lucide-react";
+import { Plus, X, LayoutGrid, List } from "lucide-react";
 import { api, type Rental, type RentalStatus, type RentalFrequency, type Party, type UnitWithLocation } from "../lib/api";
-import FilterBar from "../components/FilterBar";
+import JalaliDateInput from "../components/JalaliDateInput";
+import { isoToJalaliString, todayIso } from "../lib/jalali";
 
 const STATUS_LABELS: Record<RentalStatus, string> = { active: "فعال", ended: "پای ته رسېدلی", cancelled: "لغوه شوی" };
 const STATUS_COLORS: Record<RentalStatus, string> = { active: "badge-info", ended: "badge-muted", cancelled: "badge-danger" };
 const FREQUENCY_LABELS: Record<RentalFrequency, string> = { monthly: "میاشتنی", quarterly: "ربعوار", yearly: "کلنی" };
+const CURRENCY_LABELS: Record<string, string> = { AFN: "افغانۍ", USD: "ډالر", PKR: "کلدار" };
 
 interface NewRentalForm {
   unitId: number | null;
@@ -23,7 +25,7 @@ interface NewRentalForm {
 
 function emptyForm(): NewRentalForm {
   return {
-    unitId: null, tenantPartyId: null, startDate: new Date().toISOString().slice(0, 10),
+    unitId: null, tenantPartyId: null, startDate: todayIso(),
     rentAmount: "", frequency: "monthly", depositAmount: "0", currencyCode: "AFN",
     notes: "", firstReceivedAmount: "",
   };
@@ -37,13 +39,14 @@ export default function RentalsPage() {
   const [unitQuery, setUnitQuery] = useState("");
   const [partyQuery, setPartyQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(todayIso());
+  const [endDate, setEndDate] = useState(todayIso());
   const [q, setQ] = useState("");
   const [applied, setApplied] = useState({ startDate: "", endDate: "", q: "" });
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   const handleSearch = () => setApplied({ startDate, endDate, q });
-  const handleClear = () => { setStartDate(""); setEndDate(""); setQ(""); setApplied({ startDate: "", endDate: "", q: "" }); };
+  const handleClear = () => { setStartDate(todayIso()); setEndDate(todayIso()); setQ(""); setApplied({ startDate: "", endDate: "", q: "" }); };
 
   const { data: rentals } = useQuery({
     queryKey: ["rentals", statusFilter, applied],
@@ -105,48 +108,106 @@ export default function RentalsPage() {
         </button>
       </div>
 
-      <div style={{ display: "flex", gap: 8, margin: "16px 0" }}>
-        {["", "active", "ended", "cancelled"].map((s) => (
-          <button key={s} className={`btn btn-sm ${statusFilter === s ? "btn-primary" : "btn-outline"}`} onClick={() => setStatusFilter(s)}>
-            {s ? STATUS_LABELS[s as RentalStatus] : "ټول"}
-          </button>
-        ))}
+      {/* Filter row */}
+      <div style={{ display: "flex", gap: 8, margin: "12px 0", flexWrap: "wrap", alignItems: "flex-end" }}>
+        <div>
+          <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 3 }}>د پیل نیټه</div>
+          <JalaliDateInput value={startDate} onChange={setStartDate} />
+        </div>
+        <div>
+          <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 3 }}>د ختم نیټه</div>
+          <JalaliDateInput value={endDate} onChange={setEndDate} />
+        </div>
+        <div>
+          <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 3 }}>لټون</div>
+          <input className="form-input" placeholder="د کرایې شمیره..." value={q} onChange={(e) => setQ(e.target.value)} style={{ width: 180 }} />
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={handleSearch}>لټول</button>
+        <button className="btn btn-outline btn-sm" onClick={handleClear}>پاکول</button>
       </div>
 
-      <div className="card" style={{ padding: 0, overflow: "auto" }}>
-        <table className="fl-table" style={{ fontSize: 13 }}>
-          <thead>
-            <tr>
-              <th>د کرایې شمېره</th><th>کرایه‌دار</th><th>ملکیت</th><th>کرایه</th>
-              <th>پاتې</th><th>حالت</th><th>پیل نېټه</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rentals?.map((r) => (
-              <tr key={r.id}>
-                <td>
-                  <Link to={`/rentals/${r.id}`} style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>
-                    {r.rentalNumber}
-                  </Link>
-                </td>
-                <td>{r.tenant?.name ?? "—"}</td>
-                <td>{r.unit ? `${r.unit.floor?.block?.name ?? ""} / ${r.unit.unitNumber}` : "—"}</td>
-                <td>{r.rentAmount} {r.currencyCode} / {FREQUENCY_LABELS[r.frequency]}</td>
-                <td style={{ color: Number(r.balance ?? 0) > 0 ? "var(--danger)" : "var(--success)", fontWeight: 600 }}>{r.balance ?? "—"}</td>
-                <td><span className={`badge ${STATUS_COLORS[r.status]}`}>{STATUS_LABELS[r.status]}</span></td>
-                <td style={{ whiteSpace: "nowrap", color: "var(--muted)" }}>{r.startDate}</td>
-              </tr>
-            ))}
-            {!rentals?.length && (
-              <tr><td colSpan={7} style={{ textAlign: "center", padding: 32, color: "var(--muted)" }}>تر اوسه هېڅ کرایه نشته.</td></tr>
-            )}
-          </tbody>
-        </table>
+      {/* Status filter + view toggle */}
+      <div style={{ display: "flex", gap: 8, margin: "12px 0", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", gap: 6 }}>
+          {["", "active", "ended", "cancelled"].map((s) => (
+            <button key={s} className={`btn btn-sm ${statusFilter === s ? "btn-primary" : "btn-outline"}`} onClick={() => setStatusFilter(s)}>
+              {s ? STATUS_LABELS[s as RentalStatus] : "ټول"}
+            </button>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 4 }}>
+          <button className={`btn btn-sm ${viewMode === "list" ? "btn-primary" : "btn-outline"}`} onClick={() => setViewMode("list")} title="لیست"><List size={15} /></button>
+          <button className={`btn btn-sm ${viewMode === "grid" ? "btn-primary" : "btn-outline"}`} onClick={() => setViewMode("grid")} title="ګرید"><LayoutGrid size={15} /></button>
+        </div>
       </div>
+
+      {/* List view */}
+      {viewMode === "list" && (
+        <div className="card" style={{ padding: 0, overflow: "auto" }}>
+          <table className="fl-table" style={{ fontSize: 13 }}>
+            <thead>
+              <tr>
+                <th>شمیره</th><th>کرایه‌دار</th><th>ملکیت</th><th>میاشتنی کرایه</th>
+                <th>الباقی</th><th>حالت</th><th>د تړون نیټه</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rentals?.map((r) => (
+                <tr key={r.id}>
+                  <td>
+                    <Link to={`/rentals/${r.id}`} style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>
+                      {r.rentalNumber}
+                    </Link>
+                  </td>
+                  <td>{r.tenant?.name ?? "—"}</td>
+                  <td>{r.unit ? `${r.unit.floor?.block?.name ?? ""} / ${r.unit.unitNumber}` : "—"}</td>
+                  <td>{r.rentAmount} {CURRENCY_LABELS[r.currencyCode] ?? r.currencyCode} / {FREQUENCY_LABELS[r.frequency]}</td>
+                  <td style={{ color: Number(r.balance ?? 0) > 0 ? "var(--danger)" : "var(--success)", fontWeight: 600 }}>{r.balance ?? "—"}</td>
+                  <td><span className={`badge ${STATUS_COLORS[r.status]}`}>{STATUS_LABELS[r.status]}</span></td>
+                  <td style={{ whiteSpace: "nowrap", color: "var(--muted)" }}>{isoToJalaliString(r.startDate)}</td>
+                </tr>
+              ))}
+              {!rentals?.length && (
+                <tr><td colSpan={7} style={{ textAlign: "center", padding: 32, color: "var(--muted)" }}>تر اوسه هیڅ کرایه نشته.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Grid view */}
+      {viewMode === "grid" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 14 }}>
+          {rentals?.map((r) => (
+            <div key={r.id} className="card" style={{ padding: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                <Link to={`/rentals/${r.id}`} style={{ fontWeight: 700, color: "var(--primary)", textDecoration: "none", fontSize: 14 }}>
+                  {r.rentalNumber}
+                </Link>
+                <span className={`badge ${STATUS_COLORS[r.status]}`}>{STATUS_LABELS[r.status]}</span>
+              </div>
+              <div style={{ fontSize: 13, marginBottom: 4 }}>{r.tenant?.name ?? "—"}</div>
+              <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
+                {r.unit?.floor?.block?.name ?? ""} / {r.unit?.unitNumber ?? ""}
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+                <span>{r.rentAmount} {CURRENCY_LABELS[r.currencyCode] ?? r.currencyCode} / {FREQUENCY_LABELS[r.frequency]}</span>
+                <span style={{ color: Number(r.balance ?? 0) > 0 ? "var(--danger)" : "var(--success)", fontWeight: 600 }}>
+                  الباقی: {r.balance ?? "—"}
+                </span>
+              </div>
+              <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 6 }}>{isoToJalaliString(r.startDate)}</div>
+            </div>
+          ))}
+          {!rentals?.length && (
+            <div style={{ gridColumn: "1/-1", textAlign: "center", padding: 48, color: "var(--muted)", fontSize: 14 }}>تر اوسه هیڅ کرایه نشته.</div>
+          )}
+        </div>
+      )}
 
       {showForm && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
-          <div className="card" style={{ width: 640, maxHeight: "88vh", overflow: "auto", padding: 24 }}>
+          <div className="card" style={{ width: 640, maxHeight: "90vh", overflow: "auto", padding: 24 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <div style={{ fontWeight: 700, fontSize: 16 }}>نوې کرایه ثبتول</div>
               <button className="btn btn-outline btn-sm" onClick={() => setShowForm(false)}><X size={14} /></button>
@@ -161,7 +222,7 @@ export default function RentalsPage() {
             <div style={{ display: "grid", gap: 12 }}>
               <div>
                 <label className="form-label">ملکیت (نمرې لټون)</label>
-                <input className="form-input" placeholder="د واحد شمېره ولیکئ..." value={unitQuery} onChange={(e) => setUnitQuery(e.target.value)} />
+                <input className="form-input" placeholder="د واحد شمیره ولیکئ..." value={unitQuery} onChange={(e) => setUnitQuery(e.target.value)} />
                 <select className="form-input" style={{ marginTop: 6 }} value={form.unitId ?? ""} onChange={(e) => setForm((f) => ({ ...f, unitId: Number(e.target.value) || null }))}>
                   <option value="">-- ملکیت وټاکئ --</option>
                   {availableUnits?.map((u) => (
@@ -182,7 +243,7 @@ export default function RentalsPage() {
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
                 <div>
-                  <label className="form-label">کرایه</label>
+                  <label className="form-label">میاشتنی کرایه</label>
                   <input className="form-input" type="number" min={0} value={form.rentAmount} onChange={(e) => setForm((f) => ({ ...f, rentAmount: e.target.value }))} />
                 </div>
                 <div>
@@ -196,16 +257,17 @@ export default function RentalsPage() {
                 <div>
                   <label className="form-label">اسعار</label>
                   <select className="form-input" value={form.currencyCode} onChange={(e) => setForm((f) => ({ ...f, currencyCode: e.target.value }))}>
-                    <option value="AFN">AFN</option>
-                    <option value="USD">USD</option>
+                    <option value="AFN">افغانۍ</option>
+                    <option value="USD">ډالر</option>
+                    <option value="PKR">کلدار</option>
                   </select>
                 </div>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10 }}>
                 <div>
-                  <label className="form-label">د پیل نېټه</label>
-                  <input className="form-input" type="date" value={form.startDate} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} />
+                  <label className="form-label">د تړون نیټه</label>
+                  <JalaliDateInput value={form.startDate} onChange={(v) => setForm((f) => ({ ...f, startDate: v }))} />
                 </div>
                 <div>
                   <label className="form-label">امانت (اختیاري)</label>
@@ -214,7 +276,7 @@ export default function RentalsPage() {
               </div>
 
               <div>
-                <label className="form-label">لومړنۍ ترلاسه شوې پیسه (اختیاري)</label>
+                <label className="form-label">لومړنی وصول (اختیاري)</label>
                 <input className="form-input" type="number" min={0} value={form.firstReceivedAmount} onChange={(e) => setForm((f) => ({ ...f, firstReceivedAmount: e.target.value }))} />
               </div>
 

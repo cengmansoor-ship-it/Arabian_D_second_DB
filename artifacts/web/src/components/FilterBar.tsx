@@ -1,4 +1,5 @@
 import { Search, X } from "lucide-react";
+import JalaliDateInput from "./JalaliDateInput";
 
 interface FilterBarProps {
   startDate: string;
@@ -58,25 +59,15 @@ export default function FilterBar({
           </div>
 
           {/* Start date */}
-          <div style={{ flex: "1 1 140px" }}>
+          <div style={{ flex: "1 1 220px" }}>
             <label className="form-label">د شروع نیټه</label>
-            <input
-              className="form-input"
-              type="date"
-              value={startDate}
-              onChange={(e) => onStartDate(e.target.value)}
-            />
+            <JalaliDateInput value={startDate} onChange={onStartDate} />
           </div>
 
           {/* End date */}
-          <div style={{ flex: "1 1 140px" }}>
+          <div style={{ flex: "1 1 220px" }}>
             <label className="form-label">د ختم نیټه</label>
-            <input
-              className="form-input"
-              type="date"
-              value={endDate}
-              onChange={(e) => onEndDate(e.target.value)}
-            />
+            <JalaliDateInput value={endDate} onChange={onEndDate} />
           </div>
 
           {/* Extra slot (e.g. party dropdown, category select, currency picker) */}

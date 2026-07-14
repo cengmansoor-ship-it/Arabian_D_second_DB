@@ -392,6 +392,110 @@ async function getProjectStructureReport(): Promise<ProjectStructureRow[]> {
   return rows;
 }
 
+// ---- Monthly Trends ----
+
+export interface MonthlyTrendPoint {
+  /** Jalali year-month label e.g. "۱۴۰۳/۰۷" */
+  label: string;
+  /** Gregorian ISO month start "YYYY-MM-01" for sorting */
+  monthIso: string;
+  income: string;
+  expenses: string;
+  purchases: string;
+}
+
+export interface MonthlyTrendsReport {
+  currencyCode: string;
+  months: MonthlyTrendPoint[];
+  customersByType: Record<string, number>;
+  unitsByStatus: Record<string, number>;
+}
+
+const JALALI_MONTHS_SHORT = ["وری","غویی","غبرګولی","چنګاښ","زمری","وږی","تله","لړم","لیندۍ","مرغومی","سلواغه","کب"];
+
+function toJalaliLabel(isoMonth: string): string {
+  const [y, m] = isoMonth.split("-").map(Number);
+  const { toJalaali } = require("jalaali-js") as typeof import("jalaali-js");
+  const { jy, jm } = toJalaali(y, m, 1);
+  return `${jy} ${JALALI_MONTHS_SHORT[jm - 1]}`;
+}
+
+/** Returns last N Gregorian months as "YYYY-MM" strings, ascending. */
+function lastNMonths(n: number): string[] {
+  const today = new Date();
+  const months: string[] = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - i, 1));
+    months.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`);
+  }
+  return months;
+}
+
+export async function getMonthlyTrends(currencyCode: string, nMonths = 12): Promise<MonthlyTrendsReport> {
+  const months = lastNMonths(nMonths);
+
+  // For each month build date range and query
+  const [allSales, allSaleReceipts, allRentalReceipts, allExpenses, allPurchases, allParties, allUnits] = await Promise.all([
+    Sale.findAll({ where: { currencyCode, status: { [Op.notIn]: ["cancelled"] } }, attributes: ["saleDate", "finalPrice"] }),
+    SaleReceipt.findAll({ where: { currencyCode, voidedAt: null }, attributes: ["receiptDate", "amount"] }),
+    RentalReceipt.findAll({ where: { currencyCode, voidedAt: null }, attributes: ["receiptDate", "amount"] }),
+    Expense.findAll({ where: { currencyCode, voidedAt: null }, attributes: ["expenseDate", "amount"] }),
+    Purchase.findAll({ where: { currencyCode, status: { [Op.notIn]: ["cancelled"] } }, attributes: ["purchaseDate", "totalAmount"] }),
+    Party.findAll({ attributes: ["type"] }),
+    Unit.findAll({ attributes: ["status"] }),
+  ]);
+
+  // Build month→ sums
+  const incomeByMonth = new Map<string, Decimal>();
+  const expensesByMonth = new Map<string, Decimal>();
+  const purchasesByMonth = new Map<string, Decimal>();
+
+  for (const m of months) {
+    incomeByMonth.set(m, new Decimal(0));
+    expensesByMonth.set(m, new Decimal(0));
+    purchasesByMonth.set(m, new Decimal(0));
+  }
+
+  const monthKey = (iso: string) => iso.slice(0, 7); // "YYYY-MM"
+
+  for (const r of allSaleReceipts) {
+    const k = monthKey(r.receiptDate);
+    if (incomeByMonth.has(k)) incomeByMonth.set(k, (incomeByMonth.get(k) ?? new Decimal(0)).plus(new Decimal(r.amount)));
+  }
+  for (const r of allRentalReceipts) {
+    const k = monthKey(r.receiptDate);
+    if (incomeByMonth.has(k)) incomeByMonth.set(k, (incomeByMonth.get(k) ?? new Decimal(0)).plus(new Decimal(r.amount)));
+  }
+  for (const e of allExpenses) {
+    const k = monthKey(e.expenseDate);
+    if (expensesByMonth.has(k)) expensesByMonth.set(k, (expensesByMonth.get(k) ?? new Decimal(0)).plus(new Decimal(e.amount)));
+  }
+  for (const p of allPurchases) {
+    const k = monthKey(p.purchaseDate);
+    if (purchasesByMonth.has(k)) purchasesByMonth.set(k, (purchasesByMonth.get(k) ?? new Decimal(0)).plus(new Decimal(p.totalAmount)));
+  }
+
+  const trendMonths: MonthlyTrendPoint[] = months.map((m) => ({
+    label: toJalaliLabel(m),
+    monthIso: m + "-01",
+    income: (incomeByMonth.get(m) ?? new Decimal(0)).toFixed(2),
+    expenses: (expensesByMonth.get(m) ?? new Decimal(0)).toFixed(2),
+    purchases: (purchasesByMonth.get(m) ?? new Decimal(0)).toFixed(2),
+  }));
+
+  const customersByType: Record<string, number> = {};
+  for (const p of allParties) {
+    customersByType[p.type] = (customersByType[p.type] ?? 0) + 1;
+  }
+
+  const unitsByStatus: Record<string, number> = {};
+  for (const u of allUnits) {
+    unitsByStatus[u.status] = (unitsByStatus[u.status] ?? 0) + 1;
+  }
+
+  return { currencyCode, months: trendMonths, customersByType, unitsByStatus };
+}
+
 /**
  * Profit & loss for one currency over a date range, computed directly from each module's own
  * records (Sale/Rental/Expense/Purchase/EmployeePayment/PartnerTransaction) rather than by

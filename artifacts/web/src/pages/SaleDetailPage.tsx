@@ -3,18 +3,22 @@ import { useParams, Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Plus, X, Undo2 } from "lucide-react";
 import { api, type Sale, type SaleReceipt, type SaleStatus } from "../lib/api";
+import JalaliDateInput from "../components/JalaliDateInput";
+import { isoToJalaliString, todayIso } from "../lib/jalali";
 
 const STATUS_LABELS: Record<SaleStatus, string> = {
   draft: "مسوده", reserved: "بکل شوی", active: "فعال",
   fully_paid: "بشپړ تادیه شوی", cancelled: "لغوه شوی", reversed: "بېرته شوی",
 };
 
+const CURRENCY_LABELS: Record<string, string> = { AFN: "افغانۍ", USD: "ډالر", PKR: "کلدار" };
+
 export default function SaleDetailPage() {
   const { id } = useParams();
   const qc = useQueryClient();
   const [showReceiptForm, setShowReceiptForm] = useState(false);
   const [amount, setAmount] = useState("");
-  const [receiptDate, setReceiptDate] = useState(new Date().toISOString().slice(0, 10));
+  const [receiptDate, setReceiptDate] = useState(todayIso());
   const [method, setMethod] = useState("cash");
   const [note, setNote] = useState("");
   const [allowOverpayment, setAllowOverpayment] = useState(false);
@@ -44,6 +48,8 @@ export default function SaleDetailPage() {
 
   if (!sale) return null;
 
+  const currLabel = CURRENCY_LABELS[sale.currencyCode] ?? sale.currencyCode;
+
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -58,33 +64,36 @@ export default function SaleDetailPage() {
         <span className="badge badge-info">{STATUS_LABELS[sale.status]}</span>
       </div>
       <p className="page-sub">
-        پیرودونکی: {sale.party?.name} — ملکیت: {sale.unit?.floor?.block?.name} / {sale.unit?.unitNumber}
+        پیرودونکی: {[sale.party?.name, sale.party?.fatherName, sale.party?.grandfatherName].filter(Boolean).join(" / ")} —
+        تذکره: {sale.party?.tazkiraNumber ?? "—"} — تماس: {sale.party?.phone1 ?? "—"} —
+        ملکیت: {sale.unit?.floor?.block?.name} / {sale.unit?.unitNumber}
+        {sale.unit?.floor?.name ? ` (منزل: ${sale.unit.floor.name})` : ""}
       </p>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, margin: "16px 0" }}>
         <div className="card" style={{ padding: 16 }}>
-          <div style={{ fontSize: 12, color: "var(--muted)" }}>نرخ</div>
-          <div style={{ fontWeight: 700, fontSize: 18 }}>{sale.price} {sale.currencyCode}</div>
-        </div>
-        <div className="card" style={{ padding: 16 }}>
-          <div style={{ fontSize: 12, color: "var(--muted)" }}>تخفیف</div>
-          <div style={{ fontWeight: 700, fontSize: 18 }}>{sale.discount}</div>
+          <div style={{ fontSize: 12, color: "var(--muted)" }}>اصلي قیمت</div>
+          <div style={{ fontWeight: 700, fontSize: 18 }}>{sale.price} {currLabel}</div>
         </div>
         <div className="card" style={{ padding: 16 }}>
           <div style={{ fontSize: 12, color: "var(--muted)" }}>وروستی نرخ</div>
-          <div style={{ fontWeight: 700, fontSize: 18 }}>{sale.finalPrice}</div>
+          <div style={{ fontWeight: 700, fontSize: 18 }}>{sale.finalPrice} {currLabel}</div>
         </div>
         <div className="card" style={{ padding: 16 }}>
-          <div style={{ fontSize: 12, color: "var(--muted)" }}>پاتې حساب</div>
+          <div style={{ fontSize: 12, color: "var(--muted)" }}>خرڅ تاریخ</div>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>{isoToJalaliString(sale.saleDate)}</div>
+        </div>
+        <div className="card" style={{ padding: 16 }}>
+          <div style={{ fontSize: 12, color: "var(--muted)" }}>الباقی</div>
           <div style={{ fontWeight: 700, fontSize: 18, color: Number(sale.balance ?? 0) > 0 ? "var(--danger)" : "var(--success)" }}>
-            {sale.balance}
+            {sale.balance} {currLabel}
           </div>
         </div>
       </div>
 
       <div className="card" style={{ padding: 22 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, borderBottom: "1px solid var(--border)", paddingBottom: 12 }}>
-          <div style={{ fontWeight: 600, fontSize: 15 }}>رسیدونه (تادیات)</div>
+          <div style={{ fontWeight: 600, fontSize: 15 }}>رسیدونه (وصول)</div>
           {sale.status !== "cancelled" && sale.status !== "reversed" && Number(sale.balance ?? 0) !== 0 && (
             <button className="btn btn-primary btn-sm" onClick={() => setShowReceiptForm(true)}><Plus size={14} /> نوی رسید</button>
           )}
@@ -93,19 +102,19 @@ export default function SaleDetailPage() {
         <table className="fl-table" style={{ fontSize: 13 }}>
           <thead>
             <tr>
-              <th>رسید نمبر</th><th>نېټه</th><th>پخوانی پاتې</th><th>ترلاسه شوی</th>
-              <th>نوی پاتې</th><th>طریقه</th><th>حالت</th><th></th>
+              <th>رسید نمبر</th><th>نیټه</th><th>پخوانی الباقی</th><th>وصول</th>
+              <th>نوی الباقی</th><th>طریقه</th><th>حالت</th><th></th>
             </tr>
           </thead>
           <tbody>
             {sale.receipts?.map((r) => (
               <tr key={r.id} style={{ opacity: r.voidedAt ? 0.5 : 1 }}>
                 <td>{r.receiptNumber}</td>
-                <td style={{ whiteSpace: "nowrap" }}>{r.receiptDate}</td>
+                <td style={{ whiteSpace: "nowrap" }}>{isoToJalaliString(r.receiptDate)}</td>
                 <td>{r.previousBalance ?? "—"}</td>
                 <td style={{ color: "var(--success)", fontWeight: 600 }}>{r.amount}</td>
                 <td>{r.newBalance ?? "—"}</td>
-                <td>{r.method}</td>
+                <td>{r.method === "cash" ? "نغدي" : r.method === "bank_transfer" ? "بانکي" : r.method}</td>
                 <td>{r.voidedAt ? <span className="badge badge-danger">لغوه شوی</span> : <span className="badge badge-success">فعال</span>}</td>
                 <td>
                   {!r.voidedAt && (
@@ -126,7 +135,7 @@ export default function SaleDetailPage() {
               </tr>
             ))}
             {!sale.receipts?.length && (
-              <tr><td colSpan={8} style={{ textAlign: "center", padding: 24, color: "var(--muted)" }}>تر اوسه هېڅ رسید نشته.</td></tr>
+              <tr><td colSpan={8} style={{ textAlign: "center", padding: 24, color: "var(--muted)" }}>تر اوسه هیڅ رسید نشته.</td></tr>
             )}
           </tbody>
         </table>
@@ -150,8 +159,8 @@ export default function SaleDetailPage() {
                 <input className="form-input" type="number" min={0} value={amount} onChange={(e) => setAmount(e.target.value)} />
               </div>
               <div>
-                <label className="form-label">نېټه</label>
-                <input className="form-input" type="date" value={receiptDate} onChange={(e) => setReceiptDate(e.target.value)} />
+                <label className="form-label">نیټه</label>
+                <JalaliDateInput value={receiptDate} onChange={setReceiptDate} />
               </div>
               <div>
                 <label className="form-label">طریقه</label>
