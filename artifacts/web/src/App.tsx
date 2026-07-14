@@ -29,6 +29,8 @@ import PartnersPage from "./pages/PartnersPage";
 import PartnerDetailPage from "./pages/PartnerDetailPage";
 import ProfitLossPage from "./pages/ProfitLossPage";
 import GeneralReportPage from "./pages/GeneralReportPage";
+import DailyCashJournalPage from "./pages/DailyCashJournalPage";
+import CustomersLandingPage from "./pages/CustomersLandingPage";
 
 function Protected({ children }: { children: React.ReactNode }) {
   const { user, loading, justLoggedIn } = useAuth();
@@ -93,6 +95,9 @@ export default function App() {
           <Route path="exchange" element={<ExchangePage />} />
           <Route path="partners" element={<PartnersPage />} />
           <Route path="partners/:id" element={<PartnerDetailPage />} />
+          <Route path="roznamcha" element={<DailyCashJournalPage />} />
+          <Route path="customers" element={<CustomersLandingPage />} />
+          <Route path="shops" element={<div style={{padding:40,color:"var(--muted)",textAlign:"center"}}>د دوکانونو برخه ډیره ژر راځي...</div>} />
           <Route path="reports/profit-loss" element={<ProfitLossPage />} />
           <Route path="reports/general" element={<GeneralReportPage />} />
           <Route

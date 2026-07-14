@@ -19,6 +19,7 @@ import employeesRouter from "./employees";
 import exchangeRouter from "./exchange";
 import partnersRouter from "./partners";
 import reportsRouter from "./reports";
+import roznamchaRouter from "./roznamcha";
 
 const router: IRouter = Router();
 
@@ -42,5 +43,6 @@ router.use("/employees", employeesRouter);
 router.use("/exchange", exchangeRouter);
 router.use("/partners", partnersRouter);
 router.use("/reports", reportsRouter);
+router.use("/roznamcha", roznamchaRouter);
 
 export default router;

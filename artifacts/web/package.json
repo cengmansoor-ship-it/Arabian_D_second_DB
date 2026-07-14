@@ -12,6 +12,7 @@
   "dependencies": {
     "@tanstack/react-query": "catalog:",
     "clsx": "catalog:",
+    "decimal.js": "^10.6.0",
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

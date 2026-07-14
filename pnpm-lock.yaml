@@ -435,6 +435,9 @@ importers:
       clsx:
         specifier: 'catalog:'
         version: 2.1.1
+      decimal.js:
+        specifier: ^10.6.0
+        version: 10.6.0
       lucide-react:
         specifier: 'catalog:'
         version: 0.545.0(react@19.1.0)

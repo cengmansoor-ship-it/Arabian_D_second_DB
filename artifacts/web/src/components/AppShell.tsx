@@ -1,56 +1,133 @@
 import { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Settings, Users, ShieldCheck, ScrollText,
-  LogOut, Building2, Layers, Tags, BookText, Wallet, Contact,
-  Menu, ChevronRight, Search, Bell, MessageSquare, ChevronDown, ReceiptText,
-  KeyRound, Receipt, ShoppingCart, UserRound, ArrowLeftRight, Handshake, TrendingUp
+  LogOut, Building2, BookText, Contact, Menu, Search, Bell,
+  ChevronDown, ChevronLeft, BookOpen, Receipt, Handshake,
+  BarChart3, Layers, Store,
 } from "lucide-react";
 import { useAuth } from "../lib/auth";
 
-const navGroups = [
+// ── Sidebar item types ────────────────────────────────────────────────────────
+
+interface NavItem {
+  to: string;
+  label: string;
+  icon: React.ElementType;
+  end?: boolean;
+  adminOnly?: boolean;
+}
+
+interface NavGroup {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+  /** Direct link — no sub-items */
+  to?: string;
+  end?: boolean;
+  adminOnly?: boolean;
+  /** Sub-menu items */
+  children?: NavItem[];
+}
+
+// ── Nav definition ────────────────────────────────────────────────────────────
+
+const NAV: NavGroup[] = [
   {
-    label: "اصلي مینو",
-    items: [
-      { to: "/", label: "کورپاڼه", icon: LayoutDashboard, end: true },
-      { to: "/projects", label: "پروژې", icon: Layers, end: false },
-      { to: "/unit-types", label: "د واحدونو ډولونه", icon: Tags, end: false },
-      { to: "/parties", label: "اشخاص / پیرودونکي", icon: Contact, end: false },
-      { to: "/sales", label: "پلورنې", icon: ReceiptText, end: false },
-      { to: "/rentals", label: "کرایې", icon: KeyRound, end: false },
-      { to: "/purchases", label: "پیرودنې", icon: ShoppingCart, end: false },
-      { to: "/expenses", label: "لګښتونه", icon: Receipt, end: false },
-      { to: "/employees", label: "کارکوونکي", icon: UserRound, end: false },
-      { to: "/exchange", label: "صرافي", icon: ArrowLeftRight, end: false },
-      { to: "/partners", label: "شریکان", icon: Handshake, end: false },
+    id: "dashboard",
+    label: "ډشبورډ",
+    icon: LayoutDashboard,
+    to: "/",
+    end: true,
+  },
+  {
+    id: "roznamcha",
+    label: "روزنامچه",
+    icon: BookOpen,
+    to: "/roznamcha",
+  },
+  {
+    id: "customers",
+    label: "مشتریان",
+    icon: Contact,
+    to: "/customers",
+  },
+  {
+    id: "projects",
+    label: "پروژه",
+    icon: Layers,
+    children: [
+      { to: "/projects", label: "پروژه", icon: Building2 },
+      { to: "/shops", label: "دوکانونه", icon: Store },
     ],
   },
   {
-    label: "مالیه",
-    adminOnly: false,
-    items: [
-      { to: "/reports/profit-loss", label: "ګټه او تاوان", icon: TrendingUp, end: false },
-      { to: "/reports/general", label: "عمومي راپور", icon: BookText, end: false },
-      { to: "/journal", label: "د لیدلوري ژورنال", icon: BookText, end: false, adminOnly: true },
-      { to: "/cash-accounts", label: "د کیش حسابونه", icon: Wallet, end: false, adminOnly: true },
-    ],
+    id: "expenses",
+    label: "مصارفات",
+    icon: Receipt,
+    to: "/expenses",
   },
   {
-    label: "اداره",
-    items: [
-      { to: "/settings", label: "تنظیمات", icon: Settings, end: false },
-      { to: "/users", label: "کاروونکي", icon: Users, end: false, adminOnly: true },
-      { to: "/roles", label: "رولونه", icon: ShieldCheck, end: false, adminOnly: true },
-      { to: "/audit-log", label: "د بدلونونو راپور", icon: ScrollText, end: false, adminOnly: true },
+    id: "partners",
+    label: "شریکان",
+    icon: Handshake,
+    to: "/partners",
+  },
+  {
+    id: "general-report",
+    label: "عمومي راپور",
+    icon: BarChart3,
+    to: "/reports/general",
+  },
+  {
+    id: "settings",
+    label: "تنظیمات",
+    icon: Settings,
+    children: [
+      { to: "/settings", label: "د سیستم تنظیمات", icon: Settings },
+      { to: "/users", label: "کاروونکي", icon: Users, adminOnly: true },
+      { to: "/roles", label: "رولونه", icon: ShieldCheck, adminOnly: true },
+      { to: "/audit-log", label: "د بدلونونو راپور", icon: ScrollText, adminOnly: true },
     ],
   },
 ];
 
+// ── Component ─────────────────────────────────────────────────────────────────
+
 export default function AppShell() {
   const { user, logout, hasRole } = useAuth();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(["settings"]));
 
   const isAdmin = hasRole("admin");
+
+  function toggleGroup(id: string) {
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  const navLinkStyle = (isActive: boolean): React.CSSProperties => ({
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    padding: "10px 12px",
+    borderRadius: 8,
+    textDecoration: "none",
+    fontSize: 14,
+    fontWeight: 500,
+    color: isActive ? "#fff" : "var(--sidebar-text)",
+    background: isActive ? "var(--sidebar-active-bg)" : "transparent",
+    transition: "background 0.15s, color 0.15s",
+    cursor: "pointer",
+    border: "none",
+    width: "100%",
+    textAlign: "right",
+  });
 
   return (
     <div className="flex h-screen w-full overflow-hidden" style={{ background: "var(--bg)" }}>
@@ -79,86 +156,109 @@ export default function AppShell() {
             padding: "22px 24px",
             minWidth: "var(--sidebar-width)",
             borderBottom: "1px solid var(--sidebar-border)",
-            marginBottom: 16,
+            marginBottom: 8,
           }}
         >
           <div
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: "50%",
+              width: 44, height: 44, borderRadius: "50%",
               background: "rgba(255,255,255,0.12)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
             }}
           >
             <Building2 size={22} color="#fff" />
           </div>
           <div style={{ overflow: "hidden" }}>
-            <div style={{ color: "#fff", fontWeight: 700, fontSize: 16, lineHeight: 1.3, whiteSpace: "nowrap" }}>
+            <div style={{ color: "#fff", fontWeight: 700, fontSize: 15, lineHeight: 1.3, whiteSpace: "nowrap" }}>
               اربین ډي استوګنځای
             </div>
           </div>
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, overflowY: "auto", padding: "0 16px", minWidth: "var(--sidebar-width)" }}>
-          {navGroups.map((group) => {
+        <nav style={{ flex: 1, overflowY: "auto", padding: "8px 16px", minWidth: "var(--sidebar-width)" }}>
+          {NAV.map((group) => {
             if (group.adminOnly && !isAdmin) return null;
-            const visibleItems = group.items.filter((item) => !item.adminOnly || isAdmin);
-            if (visibleItems.length === 0) return null;
+
+            // Simple direct link
+            if (group.to) {
+              return (
+                <NavLink
+                  key={group.id}
+                  to={group.to}
+                  end={group.end}
+                  style={({ isActive }) => ({ ...navLinkStyle(isActive), marginBottom: 2 })}
+                  onMouseEnter={(e) => {
+                    if (!e.currentTarget.classList.contains("active"))
+                      e.currentTarget.style.background = "var(--sidebar-hover-bg)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!e.currentTarget.classList.contains("active"))
+                      e.currentTarget.style.background = "transparent";
+                  }}
+                  className={({ isActive }) => (isActive ? "active" : "")}
+                >
+                  <group.icon size={19} style={{ flexShrink: 0 }} />
+                  <span style={{ whiteSpace: "nowrap", flex: 1 }}>{group.label}</span>
+                </NavLink>
+              );
+            }
+
+            // Expandable group
+            const isOpen = openGroups.has(group.id);
+            const visibleChildren = (group.children ?? []).filter((c) => !c.adminOnly || isAdmin);
+            if (visibleChildren.length === 0) return null;
+
             return (
-              <div key={group.label} style={{ marginBottom: 24 }}>
+              <div key={group.id} style={{ marginBottom: 2 }}>
+                <button
+                  onClick={() => toggleGroup(group.id)}
+                  style={{
+                    ...navLinkStyle(false),
+                    justifyContent: "flex-start",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "var(--sidebar-hover-bg)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                >
+                  <group.icon size={19} style={{ flexShrink: 0 }} />
+                  <span style={{ whiteSpace: "nowrap", flex: 1 }}>{group.label}</span>
+                  <span style={{ transition: "transform 0.2s", transform: isOpen ? "rotate(-90deg)" : "rotate(0)" }}>
+                    <ChevronLeft size={15} color="var(--sidebar-muted)" />
+                  </span>
+                </button>
+
+                {/* Children */}
                 <div
                   style={{
-                    color: "var(--sidebar-muted)",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    letterSpacing: "0.05em",
-                    textTransform: "uppercase",
-                    padding: "0 12px",
-                    marginBottom: 10,
+                    maxHeight: isOpen ? `${visibleChildren.length * 48}px` : "0",
+                    overflow: "hidden",
+                    transition: "max-height 0.2s ease",
+                    paddingRight: 12,
                   }}
                 >
-                  {group.label}
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  {visibleItems.map((item) => (
+                  {visibleChildren.map((child) => (
                     <NavLink
-                      key={item.to}
-                      to={item.to}
-                      end={item.end}
+                      key={child.to}
+                      to={child.to}
+                      end={child.end}
                       style={({ isActive }) => ({
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        padding: "10px 12px",
-                        borderRadius: 8,
-                        textDecoration: "none",
-                        fontSize: 14,
-                        fontWeight: 500,
-                        color: isActive ? "#fff" : "var(--sidebar-text)",
-                        background: isActive ? "var(--sidebar-active-bg)" : "transparent",
-                        transition: "background 0.15s, color 0.15s",
+                        ...navLinkStyle(isActive),
+                        fontSize: 13,
+                        paddingRight: 16,
+                        marginTop: 2,
                       })}
                       onMouseEnter={(e) => {
-                        const el = e.currentTarget;
-                        if (el.style.background === "transparent" || el.style.background === "") {
-                          el.style.background = "var(--sidebar-hover-bg)";
-                        }
+                        if (!e.currentTarget.classList.contains("active"))
+                          e.currentTarget.style.background = "var(--sidebar-hover-bg)";
                       }}
                       onMouseLeave={(e) => {
-                        const el = e.currentTarget;
-                        if (!el.classList.contains("active")) {
-                          el.style.background = "transparent";
-                        }
+                        if (!e.currentTarget.classList.contains("active"))
+                          e.currentTarget.style.background = "transparent";
                       }}
                       className={({ isActive }) => (isActive ? "active" : "")}
                     >
-                      <item.icon size={19} style={{ flexShrink: 0 }} />
-                      <span style={{ whiteSpace: "nowrap" }}>{item.label}</span>
+                      <child.icon size={16} style={{ flexShrink: 0, opacity: 0.7 }} />
+                      <span style={{ whiteSpace: "nowrap" }}>{child.label}</span>
                     </NavLink>
                   ))}
                 </div>
@@ -178,19 +278,8 @@ export default function AppShell() {
           <button
             onClick={() => logout()}
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              width: "100%",
-              padding: "10px 12px",
-              borderRadius: 8,
-              border: "none",
-              background: "transparent",
-              color: "var(--sidebar-text)",
-              fontSize: 14,
-              fontWeight: 500,
-              cursor: "pointer",
-              transition: "background 0.15s, color 0.15s",
+              ...navLinkStyle(false),
+              gap: 12, width: "100%", justifyContent: "flex-start",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = "var(--sidebar-hover-bg)";
@@ -229,20 +318,14 @@ export default function AppShell() {
             <button
               onClick={() => setSidebarOpen((v) => !v)}
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                border: "1px solid var(--border)",
-                background: "var(--surface)",
-                cursor: "pointer",
-                color: "var(--text)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                width: 40, height: 40, borderRadius: "50%",
+                border: "1px solid var(--border)", background: "var(--surface)",
+                cursor: "pointer", color: "var(--text)",
                 boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
               }}
             >
-              {sidebarOpen ? <ChevronRight size={20} /> : <Menu size={20} />}
+              <Menu size={20} />
             </button>
 
             <div style={{ position: "relative", width: "100%", maxWidth: 400 }}>
@@ -253,15 +336,9 @@ export default function AppShell() {
                 type="text"
                 placeholder="د لټون لپاره دلته ولیکئ..."
                 style={{
-                  width: "100%",
-                  height: 44,
-                  borderRadius: 9999,
-                  background: "var(--surface-2)",
-                  border: "none",
-                  padding: "0 44px 0 20px",
-                  fontSize: 14,
-                  color: "var(--text)",
-                  outline: "none",
+                  width: "100%", height: 44, borderRadius: 9999,
+                  background: "var(--surface-2)", border: "none",
+                  padding: "0 44px 0 20px", fontSize: 14, color: "var(--text)", outline: "none",
                 }}
               />
             </div>
@@ -270,40 +347,20 @@ export default function AppShell() {
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <button
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                background: "var(--surface-2)",
-                border: "none",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "var(--muted)",
-                cursor: "pointer",
-                position: "relative",
+                width: 40, height: 40, borderRadius: "50%",
+                background: "var(--surface-2)", border: "none",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "var(--muted)", cursor: "pointer", position: "relative",
               }}
             >
               <Bell size={20} />
-              <div style={{ position: "absolute", top: 10, right: 10, width: 8, height: 8, borderRadius: "50%", background: "var(--danger)", border: "2px solid var(--surface-2)" }} />
+              <div style={{
+                position: "absolute", top: 10, right: 10,
+                width: 8, height: 8, borderRadius: "50%",
+                background: "var(--danger)", border: "2px solid var(--surface-2)",
+              }} />
             </button>
-            <button
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                background: "var(--surface-2)",
-                border: "none",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "var(--muted)",
-                cursor: "pointer",
-                position: "relative",
-              }}
-            >
-              <MessageSquare size={20} />
-            </button>
-            
+
             <div style={{ width: 1, height: 32, background: "var(--border)", margin: "0 8px" }} />
 
             <div style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
@@ -313,17 +370,10 @@ export default function AppShell() {
               </div>
               <div
                 style={{
-                  width: 46,
-                  height: 46,
-                  borderRadius: "50%",
+                  width: 46, height: 46, borderRadius: "50%",
                   background: "var(--primary-light)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "var(--primary)",
-                  fontSize: 18,
-                  fontWeight: 700,
-                  flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  color: "var(--primary)", fontSize: 18, fontWeight: 700, flexShrink: 0,
                 }}
               >
                 {user?.fullName?.[0] ?? "A"}

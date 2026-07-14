@@ -36,6 +36,7 @@ import { EmployeePayment } from "./EmployeePayment";
 import { ExchangeTransaction } from "./ExchangeTransaction";
 import { Partner } from "./Partner";
 import { PartnerTransaction } from "./PartnerTransaction";
+import { DailyCashEntry } from "./DailyCashEntry";
 export type { UnitStatus, UnitPurpose } from "./Unit";
 export type { ProjectStatus } from "./Project";
 export type { FloorType } from "./Floor";
@@ -127,6 +128,9 @@ Party.hasOne(Partner, { foreignKey: "partyId", as: "partner" });
 Partner.hasMany(PartnerTransaction, { foreignKey: "partnerId", as: "transactions" });
 PartnerTransaction.belongsTo(Partner, { foreignKey: "partnerId", as: "partner" });
 
+DailyCashEntry.belongsTo(Party, { foreignKey: "partyId", as: "party" });
+Party.hasMany(DailyCashEntry, { foreignKey: "partyId", as: "dailyCashEntries" });
+
 export {
   User,
   Role,
@@ -167,4 +171,5 @@ export {
   ExchangeTransaction,
   Partner,
   PartnerTransaction,
+  DailyCashEntry,
 };
