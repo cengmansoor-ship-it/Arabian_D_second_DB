@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { Op } from "sequelize";
 import {
   Purchase,
   PurchasePayment,
@@ -20,8 +21,26 @@ const purchaseIncludes = [{ model: Party, as: "supplier" as const }];
 
 router.get("/", requireAuth, async (req, res) => {
   const status = typeof req.query.status === "string" ? req.query.status : undefined;
-  const where: Record<string, unknown> = {};
+  const startDate = typeof req.query.startDate === "string" ? req.query.startDate : undefined;
+  const endDate = typeof req.query.endDate === "string" ? req.query.endDate : undefined;
+  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const partyId = typeof req.query.partyId === "string" ? Number(req.query.partyId) || undefined : undefined;
+  const itemName = typeof req.query.itemName === "string" ? req.query.itemName.trim() : "";
+
+  const where: Record<string | symbol, unknown> = {};
   if (status) where["status"] = status;
+  if (partyId) where["supplierPartyId"] = partyId;
+  if (startDate || endDate) {
+    const df: Record<symbol, string> = {};
+    if (startDate) df[Op.gte] = startDate;
+    if (endDate) df[Op.lte] = endDate;
+    where["purchaseDate"] = df;
+  }
+  if (q) {
+    where[Op.or] = [{ itemName: { [Op.like]: `%${q}%` } }, { notes: { [Op.like]: `%${q}%` } }];
+  } else if (itemName) {
+    where["itemName"] = { [Op.like]: `%${itemName}%` };
+  }
   const purchases = await Purchase.findAll({ where, order: [["id", "DESC"]], include: purchaseIncludes });
   const withBalances = await Promise.all(
     purchases.map(async (p) => ({ ...p.toJSON(), balance: await getPurchaseBalance(p) })),

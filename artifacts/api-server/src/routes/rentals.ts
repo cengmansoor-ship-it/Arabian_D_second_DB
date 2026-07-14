@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { Op } from "sequelize";
 import {
   Rental,
   RentalReceipt,
@@ -31,8 +32,26 @@ const rentalIncludes = [
 
 router.get("/", requireAuth, async (req, res) => {
   const status = typeof req.query.status === "string" ? req.query.status : undefined;
-  const where: Record<string, unknown> = {};
+  const startDate = typeof req.query.startDate === "string" ? req.query.startDate : undefined;
+  const endDate = typeof req.query.endDate === "string" ? req.query.endDate : undefined;
+  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const partyId = typeof req.query.partyId === "string" ? Number(req.query.partyId) || undefined : undefined;
+
+  const where: Record<string | symbol, unknown> = {};
   if (status) where["status"] = status;
+  if (partyId) where["tenantPartyId"] = partyId;
+  if (startDate || endDate) {
+    const df: Record<symbol, string> = {};
+    if (startDate) df[Op.gte] = startDate;
+    if (endDate) df[Op.lte] = endDate;
+    where["startDate"] = df;
+  }
+  if (q) {
+    where[Op.or] = [
+      { rentalNumber: { [Op.like]: `%${q}%` } },
+      { notes: { [Op.like]: `%${q}%` } },
+    ];
+  }
   const rentals = await Rental.findAll({ where, order: [["id", "DESC"]], include: rentalIncludes });
   const withBalances = await Promise.all(
     rentals.map(async (r) => ({ ...r.toJSON(), balance: await getRentalBalance(r) })),

@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { Op } from "sequelize";
 import { ExchangeTransaction, Party, createExchangeTransaction, PostingError } from "@workspace/db-sequelize";
 import { requireAuth, type AuthedRequest } from "../middlewares/requireAuth";
 import { requirePermission } from "../middlewares/requirePermission";
@@ -7,9 +8,25 @@ import { recordAudit } from "../lib/audit";
 const router: IRouter = Router();
 
 router.get("/", requireAuth, async (req, res) => {
-  const partyId = typeof req.query.partyId === "string" ? Number(req.query.partyId) : undefined;
-  const where: Record<string, unknown> = {};
+  const partyId = typeof req.query.partyId === "string" ? Number(req.query.partyId) || undefined : undefined;
+  const startDate = typeof req.query.startDate === "string" ? req.query.startDate : undefined;
+  const endDate = typeof req.query.endDate === "string" ? req.query.endDate : undefined;
+  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+
+  const where: Record<string | symbol, unknown> = {};
   if (partyId) where["partyId"] = partyId;
+  if (startDate || endDate) {
+    const df: Record<symbol, string> = {};
+    if (startDate) df[Op.gte] = startDate;
+    if (endDate) df[Op.lte] = endDate;
+    where["exchangeDate"] = df;
+  }
+  if (q) {
+    where[Op.or] = [
+      { reference: { [Op.like]: `%${q}%` } },
+      { notes: { [Op.like]: `%${q}%` } },
+    ];
+  }
   const exchanges = await ExchangeTransaction.findAll({
     where,
     order: [["id", "DESC"]],

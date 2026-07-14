@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type Party, type PartyLedgerResponse, type PartyType } from "../lib/api";
 import { ArrowRight, Edit2, Save, X, Printer } from "lucide-react";
 import PrintHeader from "../components/PrintHeader";
+import FilterBar from "../components/FilterBar";
 
 const TYPE_LABELS: Record<PartyType, string> = {
   individual_customer: "انفرادي پیرودونکی", market_customer: "بازار پیرودونکی",
@@ -25,7 +26,31 @@ export default function PartyDetailPage() {
   const { id } = useParams();
   const qc = useQueryClient();
   const { data: party } = useQuery({ queryKey: ["party", id], queryFn: () => api.get<Party>(`/parties/${id}`) });
-  const { data: ledger } = useQuery({ queryKey: ["party-ledger", id], queryFn: () => api.get<PartyLedgerResponse>(`/parties/${id}/ledger`) });
+
+  // Ledger filter state
+  const [ledgerStartDate, setLedgerStartDate] = useState("");
+  const [ledgerEndDate, setLedgerEndDate] = useState("");
+  const [ledgerQ, setLedgerQ] = useState("");
+  const [ledgerCurrency, setLedgerCurrency] = useState("");
+  const [ledgerApplied, setLedgerApplied] = useState({ startDate: "", endDate: "", q: "", currency: "" });
+
+  const handleLedgerSearch = () => setLedgerApplied({ startDate: ledgerStartDate, endDate: ledgerEndDate, q: ledgerQ, currency: ledgerCurrency });
+  const handleLedgerClear = () => {
+    setLedgerStartDate(""); setLedgerEndDate(""); setLedgerQ(""); setLedgerCurrency("");
+    setLedgerApplied({ startDate: "", endDate: "", q: "", currency: "" });
+  };
+
+  const { data: ledger } = useQuery({
+    queryKey: ["party-ledger", id, ledgerApplied],
+    queryFn: () => {
+      const p = new URLSearchParams();
+      if (ledgerApplied.currency) p.set("currency", ledgerApplied.currency);
+      if (ledgerApplied.startDate) p.set("startDate", ledgerApplied.startDate);
+      if (ledgerApplied.endDate) p.set("endDate", ledgerApplied.endDate);
+      if (ledgerApplied.q) p.set("q", ledgerApplied.q);
+      return api.get<PartyLedgerResponse>(`/parties/${id}/ledger?${p}`);
+    },
+  });
 
   const [editForm, setEditForm] = useState<Partial<Party> | null>(null);
   const updateMutation = useMutation({

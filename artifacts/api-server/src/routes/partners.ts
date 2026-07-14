@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { Op } from "sequelize";
 import { Partner, PartnerTransaction, Party, createPartner, addPartnerTransaction, getPartnerBalance, PostingError } from "@workspace/db-sequelize";
 import { requireAuth, type AuthedRequest } from "../middlewares/requireAuth";
 import { requirePermission } from "../middlewares/requirePermission";
@@ -10,8 +11,24 @@ const partnerIncludes = [{ model: Party, as: "party" as const }];
 
 router.get("/", requireAuth, async (req, res) => {
   const status = typeof req.query.status === "string" ? req.query.status : undefined;
-  const where: Record<string, unknown> = {};
+  const startDate = typeof req.query.startDate === "string" ? req.query.startDate : undefined;
+  const endDate = typeof req.query.endDate === "string" ? req.query.endDate : undefined;
+  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+
+  const where: Record<string | symbol, unknown> = {};
   if (status) where["status"] = status;
+  if (startDate || endDate) {
+    const df: Record<symbol, string> = {};
+    if (startDate) df[Op.gte] = startDate;
+    if (endDate) df[Op.lte] = endDate;
+    where["joinDate"] = df;
+  }
+  if (q) {
+    where[Op.or] = [
+      { partnerNumber: { [Op.like]: `%${q}%` } },
+      { notes: { [Op.like]: `%${q}%` } },
+    ];
+  }
   const partners = await Partner.findAll({ where, order: [["id", "DESC"]], include: partnerIncludes });
   const withBalances = await Promise.all(
     partners.map(async (p) => ({ ...p.toJSON(), balance: await getPartnerBalance(p) })),

@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { Op } from "sequelize";
 import {
   Sale,
   SaleReceipt,
@@ -29,8 +30,27 @@ const saleIncludes = [
 
 router.get("/", requireAuth, async (req, res) => {
   const status = typeof req.query.status === "string" ? req.query.status : undefined;
-  const where: Record<string, unknown> = {};
+  const startDate = typeof req.query.startDate === "string" ? req.query.startDate : undefined;
+  const endDate = typeof req.query.endDate === "string" ? req.query.endDate : undefined;
+  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const partyId = typeof req.query.partyId === "string" ? Number(req.query.partyId) || undefined : undefined;
+
+  const where: Record<string | symbol, unknown> = {};
   if (status) where["status"] = status;
+  if (partyId) where["partyId"] = partyId;
+  if (startDate || endDate) {
+    const df: Record<symbol, string> = {};
+    if (startDate) df[Op.gte] = startDate;
+    if (endDate) df[Op.lte] = endDate;
+    where["saleDate"] = df;
+  }
+  if (q) {
+    where[Op.or] = [
+      { saleNumber: { [Op.like]: `%${q}%` } },
+      { contractNumber: { [Op.like]: `%${q}%` } },
+      { notes: { [Op.like]: `%${q}%` } },
+    ];
+  }
   const sales = await Sale.findAll({ where, order: [["id", "DESC"]], include: saleIncludes });
   const withBalances = await Promise.all(
     sales.map(async (s) => ({ ...s.toJSON(), balance: await getSaleBalance(s) })),

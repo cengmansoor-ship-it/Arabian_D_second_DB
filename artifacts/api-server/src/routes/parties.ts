@@ -142,14 +142,32 @@ router.get("/:id/ledger", requireAuth, async (req, res) => {
     return;
   }
   const currencyCode = typeof req.query.currency === "string" ? req.query.currency : undefined;
+  const startDate = typeof req.query.startDate === "string" ? req.query.startDate : undefined;
+  const endDate = typeof req.query.endDate === "string" ? req.query.endDate : undefined;
+  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+
   const journalPartyType = toJournalPartyType(party.type);
-  const where: Record<string, unknown> = { partyType: journalPartyType, partyId: party.id };
-  if (currencyCode) where["currencyCode"] = currencyCode;
+  const lineWhere: Record<string | symbol, unknown> = { partyType: journalPartyType, partyId: party.id };
+  if (currencyCode) lineWhere["currencyCode"] = currencyCode;
+  if (q) lineWhere[Op.or] = [{ description: { [Op.like]: `%${q}%` } }];
+
+  const txWhere: Record<string, unknown> = {};
+  if (startDate || endDate) {
+    const df: Record<symbol, string> = {};
+    if (startDate) df[Op.gte] = startDate;
+    if (endDate) df[Op.lte] = endDate;
+    txWhere["transactionDate"] = df;
+  }
+  const hasDateFilter = Object.keys(txWhere).length > 0;
 
   const lines = await JournalLine.findAll({
-    where,
+    where: lineWhere,
     include: [
-      { model: JournalTransaction, as: "transaction" },
+      {
+        model: JournalTransaction,
+        as: "transaction",
+        ...(hasDateFilter ? { where: txWhere, required: true } : {}),
+      },
       { model: Account, as: "account" },
     ],
     order: [[{ model: JournalTransaction, as: "transaction" }, "transactionDate", "ASC"]],

@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { api, type Party, type PartyType } from "../lib/api";
-import { UserPlus, Search } from "lucide-react";
+import { UserPlus } from "lucide-react";
+import FilterBar from "../components/FilterBar";
 
 const TYPE_LABELS: Record<PartyType, string> = {
   individual_customer: "انفرادي پیرودونکی",
@@ -22,16 +24,17 @@ function emptyForm() {
 
 export default function PartiesPage() {
   const qc = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const [typeFilter, setTypeFilter] = useState<string>(searchParams.get("type") ?? "");
   const [q, setQ] = useState("");
-  const [typeFilter, setTypeFilter] = useState<string>("");
+
   const { data: parties } = useQuery({
     queryKey: ["parties", q, typeFilter],
     queryFn: () => {
       const params = new URLSearchParams();
       if (q) params.set("q", q);
       if (typeFilter) params.set("type", typeFilter);
-      const qs = params.toString();
-      return api.get<Party[]>(`/parties${qs ? `?${qs}` : ""}`);
+      return api.get<Party[]>(`/parties?${params}`);
     },
   });
 

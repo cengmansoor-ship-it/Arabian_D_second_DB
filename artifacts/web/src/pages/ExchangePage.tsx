@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, X } from "lucide-react";
 import { api, type ExchangeTransaction, type Party } from "../lib/api";
+import FilterBar from "../components/FilterBar";
 
 interface NewExchangeForm {
   partyId: number | null;
@@ -25,8 +26,24 @@ export default function ExchangePage() {
   const [form, setForm] = useState<NewExchangeForm>(emptyForm());
   const [partyQuery, setPartyQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [q, setQ] = useState("");
+  const [applied, setApplied] = useState({ startDate: "", endDate: "", q: "" });
 
-  const { data: exchanges } = useQuery({ queryKey: ["exchanges"], queryFn: () => api.get<ExchangeTransaction[]>("/exchange") });
+  const handleSearch = () => setApplied({ startDate, endDate, q });
+  const handleClear = () => { setStartDate(""); setEndDate(""); setQ(""); setApplied({ startDate: "", endDate: "", q: "" }); };
+
+  const { data: exchanges } = useQuery({
+    queryKey: ["exchanges", applied],
+    queryFn: () => {
+      const p = new URLSearchParams();
+      if (applied.startDate) p.set("startDate", applied.startDate);
+      if (applied.endDate) p.set("endDate", applied.endDate);
+      if (applied.q) p.set("q", applied.q);
+      return api.get<ExchangeTransaction[]>(`/exchange?${p}`);
+    },
+  });
 
   const { data: dealers } = useQuery({
     queryKey: ["parties-search-exchange_dealer", partyQuery],

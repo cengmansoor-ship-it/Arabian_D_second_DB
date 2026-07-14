@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, X } from "lucide-react";
 import { api, type Partner, type Party } from "../lib/api";
+import FilterBar from "../components/FilterBar";
 
 interface NewPartnerForm {
   partyId: number | null;
@@ -23,8 +24,24 @@ export default function PartnersPage() {
   const [form, setForm] = useState<NewPartnerForm>(emptyForm());
   const [partyQuery, setPartyQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [q, setQ] = useState("");
+  const [applied, setApplied] = useState({ startDate: "", endDate: "", q: "" });
 
-  const { data: partners } = useQuery({ queryKey: ["partners"], queryFn: () => api.get<Partner[]>("/partners") });
+  const handleSearch = () => setApplied({ startDate, endDate, q });
+  const handleClear = () => { setStartDate(""); setEndDate(""); setQ(""); setApplied({ startDate: "", endDate: "", q: "" }); };
+
+  const { data: partners } = useQuery({
+    queryKey: ["partners", applied],
+    queryFn: () => {
+      const p = new URLSearchParams();
+      if (applied.startDate) p.set("startDate", applied.startDate);
+      if (applied.endDate) p.set("endDate", applied.endDate);
+      if (applied.q) p.set("q", applied.q);
+      return api.get<Partner[]>(`/partners?${p}`);
+    },
+  });
 
   const { data: candidates } = useQuery({
     queryKey: ["parties-search-partner", partyQuery],

@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { Op } from "sequelize";
 import { Expense, Party, Project, createExpense, voidExpense, PostingError, type ExpenseCategory } from "@workspace/db-sequelize";
 import { requireAuth, type AuthedRequest } from "../middlewares/requireAuth";
 import { requirePermission } from "../middlewares/requirePermission";
@@ -13,8 +14,24 @@ const expenseIncludes = [
 
 router.get("/", requireAuth, async (req, res) => {
   const category = typeof req.query.category === "string" ? req.query.category : undefined;
-  const where: Record<string, unknown> = {};
+  const startDate = typeof req.query.startDate === "string" ? req.query.startDate : undefined;
+  const endDate = typeof req.query.endDate === "string" ? req.query.endDate : undefined;
+  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+
+  const where: Record<string | symbol, unknown> = {};
   if (category) where["category"] = category;
+  if (startDate || endDate) {
+    const df: Record<symbol, string> = {};
+    if (startDate) df[Op.gte] = startDate;
+    if (endDate) df[Op.lte] = endDate;
+    where["expenseDate"] = df;
+  }
+  if (q) {
+    where[Op.or] = [
+      { description: { [Op.like]: `%${q}%` } },
+      { payeeName: { [Op.like]: `%${q}%` } },
+    ];
+  }
   const expenses = await Expense.findAll({ where, order: [["id", "DESC"]], include: expenseIncludes });
   res.json(expenses);
 });

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, X, Undo2 } from "lucide-react";
 import { api, type Expense, type ExpenseCategory } from "../lib/api";
+import FilterBar from "../components/FilterBar";
 
 const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
   kitchen: "پخلنځی", office: "دفتر", transport: "ترانسپورت", utilities: "خدمتونه (برېښنا/اوبه)",
@@ -27,10 +28,24 @@ export default function ExpensesPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<NewExpenseForm>(emptyForm());
   const [error, setError] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [q, setQ] = useState("");
+  const [applied, setApplied] = useState({ startDate: "", endDate: "", q: "" });
+
+  const handleSearch = () => setApplied({ startDate, endDate, q });
+  const handleClear = () => { setStartDate(""); setEndDate(""); setQ(""); setApplied({ startDate: "", endDate: "", q: "" }); };
 
   const { data: expenses } = useQuery({
-    queryKey: ["expenses", categoryFilter],
-    queryFn: () => api.get<Expense[]>(`/expenses${categoryFilter ? `?category=${categoryFilter}` : ""}`),
+    queryKey: ["expenses", categoryFilter, applied],
+    queryFn: () => {
+      const p = new URLSearchParams();
+      if (categoryFilter) p.set("category", categoryFilter);
+      if (applied.startDate) p.set("startDate", applied.startDate);
+      if (applied.endDate) p.set("endDate", applied.endDate);
+      if (applied.q) p.set("q", applied.q);
+      return api.get<Expense[]>(`/expenses?${p}`);
+    },
   });
 
   const createMutation = useMutation({

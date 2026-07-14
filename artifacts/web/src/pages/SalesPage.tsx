@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, X } from "lucide-react";
 import { api, type Sale, type SaleStatus, type Party, type UnitWithLocation } from "../lib/api";
+import FilterBar from "../components/FilterBar";
 
 const STATUS_LABELS: Record<SaleStatus, string> = {
   draft: "مسوده", reserved: "بکل شوی", active: "فعال",
@@ -44,10 +45,24 @@ export default function SalesPage() {
   const [unitQuery, setUnitQuery] = useState("");
   const [partyQuery, setPartyQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [q, setQ] = useState("");
+  const [applied, setApplied] = useState({ startDate: "", endDate: "", q: "" });
+
+  const handleSearch = () => setApplied({ startDate, endDate, q });
+  const handleClear = () => { setStartDate(""); setEndDate(""); setQ(""); setApplied({ startDate: "", endDate: "", q: "" }); };
 
   const { data: sales } = useQuery({
-    queryKey: ["sales", statusFilter],
-    queryFn: () => api.get<Sale[]>(`/sales${statusFilter ? `?status=${statusFilter}` : ""}`),
+    queryKey: ["sales", statusFilter, applied],
+    queryFn: () => {
+      const p = new URLSearchParams();
+      if (statusFilter) p.set("status", statusFilter);
+      if (applied.startDate) p.set("startDate", applied.startDate);
+      if (applied.endDate) p.set("endDate", applied.endDate);
+      if (applied.q) p.set("q", applied.q);
+      return api.get<Sale[]>(`/sales?${p}`);
+    },
   });
 
   const { data: availableUnits } = useQuery({
@@ -57,8 +72,8 @@ export default function SalesPage() {
   });
 
   const { data: parties } = useQuery({
-    queryKey: ["parties-search", partyQuery],
-    queryFn: () => api.get<Party[]>(`/parties${partyQuery ? `?q=${encodeURIComponent(partyQuery)}` : ""}`),
+    queryKey: ["parties-search-sales", partyQuery],
+    queryFn: () => api.get<Party[]>(`/parties?type=sales_customer${partyQuery ? `&q=${encodeURIComponent(partyQuery)}` : ""}`),
     enabled: showForm,
   });
 

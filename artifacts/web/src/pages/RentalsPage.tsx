@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, X } from "lucide-react";
 import { api, type Rental, type RentalStatus, type RentalFrequency, type Party, type UnitWithLocation } from "../lib/api";
+import FilterBar from "../components/FilterBar";
 
 const STATUS_LABELS: Record<RentalStatus, string> = { active: "فعال", ended: "پای ته رسېدلی", cancelled: "لغوه شوی" };
 const STATUS_COLORS: Record<RentalStatus, string> = { active: "badge-info", ended: "badge-muted", cancelled: "badge-danger" };
@@ -36,10 +37,24 @@ export default function RentalsPage() {
   const [unitQuery, setUnitQuery] = useState("");
   const [partyQuery, setPartyQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [q, setQ] = useState("");
+  const [applied, setApplied] = useState({ startDate: "", endDate: "", q: "" });
+
+  const handleSearch = () => setApplied({ startDate, endDate, q });
+  const handleClear = () => { setStartDate(""); setEndDate(""); setQ(""); setApplied({ startDate: "", endDate: "", q: "" }); };
 
   const { data: rentals } = useQuery({
-    queryKey: ["rentals", statusFilter],
-    queryFn: () => api.get<Rental[]>(`/rentals${statusFilter ? `?status=${statusFilter}` : ""}`),
+    queryKey: ["rentals", statusFilter, applied],
+    queryFn: () => {
+      const p = new URLSearchParams();
+      if (statusFilter) p.set("status", statusFilter);
+      if (applied.startDate) p.set("startDate", applied.startDate);
+      if (applied.endDate) p.set("endDate", applied.endDate);
+      if (applied.q) p.set("q", applied.q);
+      return api.get<Rental[]>(`/rentals?${p}`);
+    },
   });
 
   const { data: availableUnits } = useQuery({
